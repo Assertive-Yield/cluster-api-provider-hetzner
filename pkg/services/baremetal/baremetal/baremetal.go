@@ -56,7 +56,7 @@ import (
 
 const (
 	// providerIDPrefix is a prefix for ProviderID.
-	providerIDPrefix = "hcloud://"
+	providerIDPrefix = "hrobot://"
 
 	// requeueAfter gives the duration of time until the next reconciliation should be performed.
 	requeueAfter = time.Second * 30
@@ -898,7 +898,7 @@ func checkForRequeueError(err error, errMessage string) (res reconcile.Result, r
 }
 
 func providerIDFromServerID(serverID int) string {
-	return fmt.Sprintf("%s%s%d", providerIDPrefix, infrav1.BareMetalHostNamePrefix, serverID)
+	return fmt.Sprintf("%s%d", providerIDPrefix, serverID)
 }
 
 func analyzePatchError(err error, ignoreNotFound bool) error {

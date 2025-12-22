@@ -237,7 +237,7 @@ spec:
                       providerID:
                         description: |-
                           ProviderID will be the hetznerbaremetalmachine which is set by the controller
-                          in the `hcloud://bm-<server-id>` format.
+                          in the `hrobot://<server-id>` format.
                         type: string
                       sshSpec:
                         description: SSHSpec gives a reference on the secret where

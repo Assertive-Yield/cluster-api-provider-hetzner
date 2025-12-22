@@ -68,7 +68,7 @@ const (
 // HetznerBareMetalMachineSpec defines the desired state of HetznerBareMetalMachine.
 type HetznerBareMetalMachineSpec struct {
 	// ProviderID will be the hetznerbaremetalmachine which is set by the controller
-	// in the `hcloud://bm-<server-id>` format.
+	// in the `hrobot://<server-id>` format.
 	// +optional
 	ProviderID *string `json:"providerID,omitempty"`
 

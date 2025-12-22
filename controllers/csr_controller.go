@@ -325,7 +325,7 @@ func getHbmmWithConstantHostname(ctx context.Context, csrUsername string, cluste
 	log := ctrl.LoggerFrom(ctx)
 
 	clusterFromCSR, serverID := getServerIDFromConstantHostname(ctx, csrUsername, clusterName)
-	providerID := "hcloud://bm-" + serverID
+	providerID := "hrobot://" + serverID
 	hList := &infrav1.HetznerBareMetalMachineList{}
 	selector := labels.NewSelector()
 	req, err := labels.NewRequirement(clusterv1.ClusterNameLabel, selection.Equals, []string{clusterFromCSR})
