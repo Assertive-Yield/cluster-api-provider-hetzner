@@ -13,7 +13,7 @@
 # limitations under the License.
 
 INFRA_SHORT = caph
-IMAGE_PREFIX ?= ghcr.io/syself
+IMAGE_PREFIX ?= ghcr.io/assertive-yield
 INFRA_PROVIDER = hetzner
 
 STAGING_IMAGE = $(INFRA_SHORT)-staging
