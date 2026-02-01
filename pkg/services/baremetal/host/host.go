@@ -117,10 +117,6 @@ func (s *Service) Reconcile(ctx context.Context) (result reconcile.Result, err e
 	hostStateMachine := newHostStateMachine(s.scope.HetznerBareMetalHost, s, s.scope.Logger)
 
 	defer func() {
-		// remove deprecated conditions
-		conditions.Delete(s.scope.HetznerBareMetalHost, infrav1.DeprecatedHetznerBareMetalHostReadyCondition)
-		conditions.Delete(s.scope.HetznerBareMetalHost, infrav1.DeprecatedHostProvisionSucceededCondition)
-		conditions.Delete(s.scope.HetznerBareMetalHost, infrav1.DeprecatedRateLimitExceededCondition)
 		conditions.SetSummary(s.scope.HetznerBareMetalHost)
 
 		// save host if it changed during reconciliation
@@ -1911,7 +1907,6 @@ func (s *Service) actionDeprovisioning(_ context.Context) actionResult {
 
 func (s *Service) actionDeleting(_ context.Context) actionResult {
 	controllerutil.RemoveFinalizer(s.scope.HetznerBareMetalHost, infrav1.HetznerBareMetalHostFinalizer)
-	controllerutil.RemoveFinalizer(s.scope.HetznerBareMetalHost, infrav1.DeprecatedBareMetalHostFinalizer)
 	return deleteComplete{}
 }
 

@@ -35,10 +35,6 @@ const (
 	// deprovisioned.
 	HetznerBareMetalHostFinalizer = "infrastructure.cluster.x-k8s.io/hetznerbaremetalhost"
 
-	// DeprecatedBareMetalHostFinalizer contains the old string.
-	// The controller will automatically update to the new string.
-	DeprecatedBareMetalHostFinalizer = "hetznerbaremetalhost.infrastructure.cluster.x-k8s.io"
-
 	// HostAnnotation is the key for an annotation that should go on a HetznerBareMetalMachine to
 	// reference what HetznerBareMetalHost it corresponds to.
 	HostAnnotation = "infrastructure.cluster.x-k8s.io/HetznerBareMetalHost"

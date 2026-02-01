@@ -81,11 +81,6 @@ func NewService(scope *scope.BareMetalMachineScope) *Service {
 
 // Reconcile implements reconcilement of HetznerBareMetalMachines.
 func (s *Service) Reconcile(ctx context.Context) (res reconcile.Result, err error) {
-	// delete the deprecated condition from existing machine objects
-	conditions.Delete(s.scope.BareMetalMachine, infrav1.DeprecatedInstanceReadyCondition)
-	conditions.Delete(s.scope.BareMetalMachine, infrav1.DeprecatedInstanceBootstrapReadyCondition)
-	conditions.Delete(s.scope.BareMetalMachine, infrav1.DeprecatedAssociateBMHCondition)
-
 	// Make sure bootstrap data is available and populated. If not, return, we
 	// will get an event from the machine update when the flag is set to true.
 	if !s.scope.IsBootstrapReady() {

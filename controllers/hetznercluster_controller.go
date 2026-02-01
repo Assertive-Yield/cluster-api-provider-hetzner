@@ -157,9 +157,6 @@ func (r *HetznerClusterReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		}
 	}()
 
-	// delete the deprecated condition from existing cluster objects
-	conditions.Delete(hetznerCluster, infrav1.DeprecatedRateLimitExceededCondition)
-
 	// check whether rate limit has been reached and if so, then wait.
 	if wait := reconcileRateLimit(hetznerCluster, r.RateLimitWaitTime); wait {
 		return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
@@ -179,7 +176,6 @@ func (r *HetznerClusterReconciler) reconcileNormal(ctx context.Context, clusterS
 
 	// If the HetznerCluster doesn't have our finalizer, add it.
 	controllerutil.AddFinalizer(hetznerCluster, infrav1.HetznerClusterFinalizer)
-	controllerutil.RemoveFinalizer(hetznerCluster, infrav1.DeprecatedHetznerClusterFinalizer)
 
 	if err := clusterScope.PatchObject(ctx); err != nil {
 		return reconcile.Result{}, err
@@ -210,9 +206,6 @@ func (r *HetznerClusterReconciler) reconcileNormal(ctx context.Context, clusterS
 	}
 
 	processControlPlaneEndpoint(hetznerCluster)
-
-	// delete deprecated conditions of old clusters
-	conditions.Delete(clusterScope.HetznerCluster, infrav1.DeprecatedHetznerClusterTargetClusterReadyCondition)
 
 	result, err := r.reconcileTargetClusterManager(ctx, clusterScope)
 	if err != nil {
@@ -370,7 +363,6 @@ func (r *HetznerClusterReconciler) reconcileDelete(ctx context.Context, clusterS
 
 	// Cluster is deleted so remove the finalizer.
 	controllerutil.RemoveFinalizer(clusterScope.HetznerCluster, infrav1.HetznerClusterFinalizer)
-	controllerutil.RemoveFinalizer(clusterScope.HetznerCluster, infrav1.DeprecatedHetznerClusterFinalizer)
 
 	return reconcile.Result{}, nil
 }
