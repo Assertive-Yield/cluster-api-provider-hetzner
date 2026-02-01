@@ -32,6 +32,30 @@
 - [Contributing](#-getting-involved-and-contributing)
 - [Contact](#-contact)
 
+## You are seeing CAPH v1.0.x
+
+**Important:** On December 5, 2025 we reset `main` to the
+[v1.0.7](https://github.com/syself/cluster-api-provider-hetzner/tree/v1.0.7) tag so that the
+documentation on `main` continues to describe the latest *stable* release. Active development for
+CAPH v1.1.x (code and docs) happens on the dedicated
+[`v1.1.x`](https://github.com/syself/cluster-api-provider-hetzner/tree/v1.1.x) branch. Please base
+new pull requests on `v1.1.x` unless you are intentionally backporting to v1.0.x.
+
+We will ship and support both lines in parallel until v1.1.x becomes generally available.
+
+| CAPH series | API version(s) | Compatible CAPI | Status |
+| ----------- | -------------- | --------------- | ------ |
+| `v1.0.x`    | `v1beta1` (CAPH + CAPI) | `<= v1.10` | On branch `main` |
+| `v1.1.x`    | `v1beta1`              | `>= v1.10` `<= v1.12` | Under active development on branch `v1.1.x` |
+| `v1.2.x`    | `v1beta2`              | `>= v1.10` | Under active development on branch `v1.2.x` |
+
+**Tip:** CAPH `v1.0.x` must be used with CAPI `v1.10` or lower (it does **not** support CAPI
+`v1.11`).
+
+Documentation about upgrading to CAPH v1.1.x will be published alongside the first v1.1.x release.
+Once that release is generally available we'll switch `main` back to tracking active development
+and update the hosted documentation accordingly.
+
 ## 📰 What is the Cluster API Provider Hetzner?
 
 > [!NOTE]
