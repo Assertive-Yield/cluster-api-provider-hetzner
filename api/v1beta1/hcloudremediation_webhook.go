@@ -17,6 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -27,32 +29,41 @@ import (
 func (r *HCloudRemediation) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
+		WithDefaulter(&hcloudRemediationDefaulter{}).
+		WithValidator(&hcloudRemediationValidator{}).
 		Complete()
 }
 
 //+kubebuilder:webhook:path=/mutate-infrastructure-cluster-x-k8s-io-v1beta1-hcloudremediation,mutating=true,failurePolicy=fail,sideEffects=None,groups=infrastructure.cluster.x-k8s.io,resources=hcloudremediations,verbs=create;update,versions=v1beta1,name=mutation.hcloudremediation.infrastructure.cluster.x-k8s.io,admissionReviewVersions={v1,v1beta1}
 
-var _ webhook.Defaulter = &HCloudRemediation{}
+// hcloudRemediationDefaulter implements webhook.CustomDefaulter.
+type hcloudRemediationDefaulter struct{}
 
-// Default implements webhook.Defaulter so a webhook will be registered for the type.
-func (r *HCloudRemediation) Default() {
+var _ webhook.CustomDefaulter = &hcloudRemediationDefaulter{}
+
+// Default implements webhook.CustomDefaulter so a webhook will be registered for the type.
+func (d *hcloudRemediationDefaulter) Default(_ context.Context, _ runtime.Object) error {
+	return nil
 }
 
 //+kubebuilder:webhook:path=/validate-infrastructure-cluster-x-k8s-io-v1beta1-hcloudremediation,mutating=false,failurePolicy=fail,sideEffects=None,groups=infrastructure.cluster.x-k8s.io,resources=hcloudremediations,verbs=create;update,versions=v1beta1,name=validation.hcloudremediation.infrastructure.cluster.x-k8s.io,admissionReviewVersions={v1,v1beta1}
 
-var _ webhook.Validator = &HCloudRemediation{}
+// hcloudRemediationValidator implements webhook.CustomValidator.
+type hcloudRemediationValidator struct{}
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type.
-func (r *HCloudRemediation) ValidateCreate() (admission.Warnings, error) {
+var _ webhook.CustomValidator = &hcloudRemediationValidator{}
+
+// ValidateCreate implements webhook.CustomValidator so a webhook will be registered for the type.
+func (v *hcloudRemediationValidator) ValidateCreate(_ context.Context, _ runtime.Object) (admission.Warnings, error) {
 	return nil, nil
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
-func (r *HCloudRemediation) ValidateUpdate(runtime.Object) (admission.Warnings, error) {
+// ValidateUpdate implements webhook.CustomValidator so a webhook will be registered for the type.
+func (v *hcloudRemediationValidator) ValidateUpdate(_ context.Context, _, _ runtime.Object) (admission.Warnings, error) {
 	return nil, nil
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type.
-func (r *HCloudRemediation) ValidateDelete() (admission.Warnings, error) {
+// ValidateDelete implements webhook.CustomValidator so a webhook will be registered for the type.
+func (v *hcloudRemediationValidator) ValidateDelete(_ context.Context, _ runtime.Object) (admission.Warnings, error) {
 	return nil, nil
 }

@@ -27,10 +27,10 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/types"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	capierrors "sigs.k8s.io/cluster-api/errors"
 	"sigs.k8s.io/cluster-api/util"
-	"sigs.k8s.io/cluster-api/util/conditions"
+	conditions "sigs.k8s.io/cluster-api/util/conditions/deprecated/v1beta1"
 	"sigs.k8s.io/cluster-api/util/patch"
 
 	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
@@ -183,18 +183,18 @@ func (m *MachineScope) IsBootstrapDataReady() bool {
 
 // GetFailureDomain returns the machine's failure domain or a default one based on a hash.
 func (m *MachineScope) GetFailureDomain() (string, error) {
-	if m.Machine.Spec.FailureDomain != nil {
-		return *m.Machine.Spec.FailureDomain, nil
+	if m.Machine.Spec.FailureDomain != "" {
+		return m.Machine.Spec.FailureDomain, nil
 	}
 
 	failureDomainNames := make([]string, 0, len(m.Cluster.Status.FailureDomains))
-	for fdName, fd := range m.Cluster.Status.FailureDomains {
+	for _, fd := range m.Cluster.Status.FailureDomains {
 		// filter out zones if we are a control plane and the cluster object
-		// wants to avoid contorl planes in that zone
-		if m.IsControlPlane() && !fd.ControlPlane {
+		// wants to avoid control planes in that zone
+		if m.IsControlPlane() && (fd.ControlPlane == nil || !*fd.ControlPlane) {
 			continue
 		}
-		failureDomainNames = append(failureDomainNames, fdName)
+		failureDomainNames = append(failureDomainNames, fd.Name)
 	}
 
 	if len(failureDomainNames) == 0 {

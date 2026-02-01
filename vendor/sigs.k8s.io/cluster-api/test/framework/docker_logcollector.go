@@ -29,13 +29,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/kind/pkg/errors"
 
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	expv1 "sigs.k8s.io/cluster-api/exp/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	"sigs.k8s.io/cluster-api/test/infrastructure/container"
 )
 
 // DockerLogCollector collect logs from a CAPD workload cluster.
-type DockerLogCollector struct{}
+type DockerLogCollector struct {
+	AdditionalLogs []AdditionalLogs
+}
+
+// AdditionalLogs is a struct to hold instruction for additional logs that need to be collected.
+type AdditionalLogs struct {
+	OutputFileName string
+	Command        string
+	Args           []string
+}
 
 // machineContainerName return a container name using the same rule used in CAPD.
 // NOTE: if the cluster name is already included in the machine name, the cluster name is not add thus
@@ -57,7 +65,7 @@ func (k DockerLogCollector) CollectMachineLog(ctx context.Context, _ client.Clie
 	return k.collectLogsFromNode(ctx, outputPath, containerName)
 }
 
-func (k DockerLogCollector) CollectMachinePoolLog(ctx context.Context, _ client.Client, m *expv1.MachinePool, outputPath string) error {
+func (k DockerLogCollector) CollectMachinePoolLog(ctx context.Context, _ client.Client, m *clusterv1.MachinePool, outputPath string) error {
 	containerRuntime, err := container.NewDockerClient()
 	if err != nil {
 		return err
@@ -138,7 +146,7 @@ func (k DockerLogCollector) collectLogsFromNode(ctx context.Context, outputPath 
 				"tar", "--hard-dereference", "--dereference", "--directory", containerDir, "--create", "--file", "-", ".",
 			)
 			if err != nil {
-				return errors.Wrapf(err, execErr)
+				return errors.Wrap(err, execErr)
 			}
 
 			err = os.MkdirAll(outputDir, 0750)
@@ -146,10 +154,11 @@ func (k DockerLogCollector) collectLogsFromNode(ctx context.Context, outputPath 
 				return err
 			}
 
-			return osExec.Command("tar", "--extract", "--file", tempfileName, "--directory", outputDir).Run() //nolint:gosec // We don't care about command injection here.
+			return osExec.CommandContext(ctx, "tar", "--extract", "--file", tempfileName, "--directory", outputDir).Run() //nolint:gosec // We don't care about command injection here.
 		}
 	}
-	return errors.AggregateConcurrent([]func() error{
+
+	collectFuncs := []func() error{
 		execToPathFn(
 			"journal.log",
 			"journalctl", "--no-pager", "--output=short-precise",
@@ -175,7 +184,13 @@ func (k DockerLogCollector) collectLogsFromNode(ctx context.Context, outputPath 
 			"journalctl", "--no-pager", "--output=short-precise", "-u", "containerd.service",
 		),
 		copyDirFn("/var/log/pods", "pods"),
-	})
+	}
+
+	for _, additionalLogs := range k.AdditionalLogs {
+		collectFuncs = append(collectFuncs, execToPathFn(additionalLogs.OutputFileName, additionalLogs.Command, additionalLogs.Args...))
+	}
+
+	return errors.AggregateConcurrent(collectFuncs)
 }
 
 // fileOnHost is a helper to create a file at path

@@ -25,7 +25,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	"sigs.k8s.io/cluster-api/util/record"
 )
 
@@ -327,6 +327,16 @@ func (host *HetznerBareMetalHost) GetConditions() clusterv1.Conditions {
 
 // SetConditions sets the underlying service state of the HetznerBareMetalHost to the predescribed clusterv1.Conditions.
 func (host *HetznerBareMetalHost) SetConditions(conditions clusterv1.Conditions) {
+	host.Spec.Status.Conditions = conditions
+}
+
+// GetV1Beta1Conditions returns the observations of the operational state of the HetznerBareMetalHost resource.
+func (host *HetznerBareMetalHost) GetV1Beta1Conditions() clusterv1.Conditions {
+	return host.Spec.Status.Conditions
+}
+
+// SetV1Beta1Conditions sets the underlying service state of the HetznerBareMetalHost to the predescribed clusterv1.Conditions.
+func (host *HetznerBareMetalHost) SetV1Beta1Conditions(conditions clusterv1.Conditions) {
 	host.Spec.Status.Conditions = conditions
 }
 

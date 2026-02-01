@@ -30,20 +30,20 @@ import (
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	addonsv1 "sigs.k8s.io/cluster-api/api/addons/v1beta2"
+	controlplanev1 "sigs.k8s.io/cluster-api/api/controlplane/kubeadm/v1beta2"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	clusterctlcluster "sigs.k8s.io/cluster-api/cmd/clusterctl/client/cluster"
-	controlplanev1 "sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1beta1"
-	addonsv1 "sigs.k8s.io/cluster-api/exp/addons/api/v1beta1"
-	expv1 "sigs.k8s.io/cluster-api/exp/api/v1beta1"
-	infrav1 "sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1beta1"
-	infraexpv1 "sigs.k8s.io/cluster-api/test/infrastructure/docker/exp/api/v1beta1"
+	infrav1 "sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1beta2"
 	"sigs.k8s.io/cluster-api/util/patch"
 )
 
 // CoreFinalizersAssertionWithLegacyClusters maps Cluster API core types to their expected finalizers for legacy Clusters.
 var CoreFinalizersAssertionWithLegacyClusters = map[string]func(types.NamespacedName) []string{
-	clusterKind: func(_ types.NamespacedName) []string { return []string{clusterv1.ClusterFinalizer} },
-	machineKind: func(_ types.NamespacedName) []string { return []string{clusterv1.MachineFinalizer} },
+	clusterKind:           func(_ types.NamespacedName) []string { return []string{clusterv1.ClusterFinalizer} },
+	machineKind:           func(_ types.NamespacedName) []string { return []string{clusterv1.MachineFinalizer} },
+	machineSetKind:        func(_ types.NamespacedName) []string { return []string{clusterv1.MachineSetFinalizer} },
+	machineDeploymentKind: func(_ types.NamespacedName) []string { return []string{clusterv1.MachineDeploymentFinalizer} },
 }
 
 // CoreFinalizersAssertionWithClassyClusters maps Cluster API core types to their expected finalizers for classy Clusters.
@@ -52,22 +52,26 @@ var CoreFinalizersAssertionWithClassyClusters = func() map[string]func(types.Nam
 	for k, v := range CoreFinalizersAssertionWithLegacyClusters {
 		r[k] = v
 	}
-	r[machineSetKind] = func(_ types.NamespacedName) []string { return []string{clusterv1.MachineSetTopologyFinalizer} }
-	r[machineDeploymentKind] = func(_ types.NamespacedName) []string { return []string{clusterv1.MachineDeploymentTopologyFinalizer} }
+	r[machineSetKind] = func(_ types.NamespacedName) []string {
+		return []string{clusterv1.MachineSetTopologyFinalizer, clusterv1.MachineSetFinalizer}
+	}
+	r[machineDeploymentKind] = func(_ types.NamespacedName) []string {
+		return []string{clusterv1.MachineDeploymentTopologyFinalizer, clusterv1.MachineDeploymentFinalizer}
+	}
 	return r
 }()
 
 // ExpFinalizersAssertion maps experimental resource types to their expected finalizers.
 var ExpFinalizersAssertion = map[string]func(types.NamespacedName) []string{
 	clusterResourceSetKind: func(_ types.NamespacedName) []string { return []string{addonsv1.ClusterResourceSetFinalizer} },
-	machinePoolKind:        func(_ types.NamespacedName) []string { return []string{expv1.MachinePoolFinalizer} },
+	machinePoolKind:        func(_ types.NamespacedName) []string { return []string{clusterv1.MachinePoolFinalizer} },
 }
 
 // DockerInfraFinalizersAssertion maps docker infrastructure resource types to their expected finalizers.
 var DockerInfraFinalizersAssertion = map[string]func(types.NamespacedName) []string{
 	dockerMachineKind:     func(_ types.NamespacedName) []string { return []string{infrav1.MachineFinalizer} },
 	dockerClusterKind:     func(_ types.NamespacedName) []string { return []string{infrav1.ClusterFinalizer} },
-	dockerMachinePoolKind: func(_ types.NamespacedName) []string { return []string{infraexpv1.MachinePoolFinalizer} },
+	dockerMachinePoolKind: func(_ types.NamespacedName) []string { return []string{infrav1.MachinePoolFinalizer} },
 }
 
 // KubeadmControlPlaneFinalizersAssertion maps Kubeadm resource types to their expected finalizers.

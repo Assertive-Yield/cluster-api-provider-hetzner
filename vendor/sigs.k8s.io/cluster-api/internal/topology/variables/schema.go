@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/utils/ptr"
 
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 )
 
 // convertToAPIExtensionsJSONSchemaProps converts a clusterv1.JSONSchemaProps to apiextensions.JSONSchemaProp.
@@ -42,19 +42,20 @@ func convertToAPIExtensionsJSONSchemaProps(schema *clusterv1.JSONSchemaProps, fl
 		MinProperties:    schema.MinProperties,
 		MaxItems:         schema.MaxItems,
 		MinItems:         schema.MinItems,
-		UniqueItems:      schema.UniqueItems,
+		UniqueItems:      ptr.Deref(schema.UniqueItems, false),
 		Format:           schema.Format,
 		MaxLength:        schema.MaxLength,
 		MinLength:        schema.MinLength,
 		Pattern:          schema.Pattern,
-		ExclusiveMaximum: schema.ExclusiveMaximum,
-		ExclusiveMinimum: schema.ExclusiveMinimum,
+		ExclusiveMaximum: ptr.Deref(schema.ExclusiveMaximum, false),
+		ExclusiveMinimum: ptr.Deref(schema.ExclusiveMinimum, false),
+		XIntOrString:     ptr.Deref(schema.XIntOrString, false),
 	}
 
 	// Only set XPreserveUnknownFields to true if it's true.
 	// apiextensions.JSONSchemaProps only allows setting XPreserveUnknownFields
 	// to true or undefined, false is forbidden.
-	if schema.XPreserveUnknownFields {
+	if ptr.Deref(schema.XPreserveUnknownFields, false) {
 		props.XPreserveUnknownFields = ptr.To(true)
 	}
 
@@ -159,6 +160,51 @@ func convertToAPIExtensionsJSONSchemaProps(schema *clusterv1.JSONSchemaProps, fl
 			props.Items = &apiextensions.JSONSchemaPropsOrArray{
 				Schema: apiExtensionsSchema,
 			}
+		}
+	}
+
+	if len(schema.OneOf) > 0 {
+		props.OneOf = make([]apiextensions.JSONSchemaProps, 0, len(schema.OneOf))
+		for idx, oneOf := range schema.OneOf {
+			apiExtensionsSchema, errs := convertToAPIExtensionsJSONSchemaProps(&oneOf, fldPath.Child("oneOf").Index(idx))
+			if len(errs) > 0 {
+				allErrs = append(allErrs, errs...)
+			} else {
+				props.OneOf = append(props.OneOf, *apiExtensionsSchema)
+			}
+		}
+	}
+
+	if len(schema.AnyOf) > 0 {
+		props.AnyOf = make([]apiextensions.JSONSchemaProps, 0, len(schema.AnyOf))
+		for idx, anyOf := range schema.AnyOf {
+			apiExtensionsSchema, errs := convertToAPIExtensionsJSONSchemaProps(&anyOf, fldPath.Child("anyOf").Index(idx))
+			if len(errs) > 0 {
+				allErrs = append(allErrs, errs...)
+			} else {
+				props.AnyOf = append(props.AnyOf, *apiExtensionsSchema)
+			}
+		}
+	}
+
+	if len(schema.AllOf) > 0 {
+		props.AllOf = make([]apiextensions.JSONSchemaProps, 0, len(schema.AllOf))
+		for idx, allOf := range schema.AllOf {
+			apiExtensionsSchema, errs := convertToAPIExtensionsJSONSchemaProps(&allOf, fldPath.Child("allOf").Index(idx))
+			if len(errs) > 0 {
+				allErrs = append(allErrs, errs...)
+			} else {
+				props.AllOf = append(props.AllOf, *apiExtensionsSchema)
+			}
+		}
+	}
+
+	if schema.Not != nil {
+		apiExtensionsSchema, errs := convertToAPIExtensionsJSONSchemaProps(schema.Not, fldPath.Child("not"))
+		if len(errs) > 0 {
+			allErrs = append(allErrs, errs...)
+		} else {
+			props.Not = apiExtensionsSchema
 		}
 	}
 

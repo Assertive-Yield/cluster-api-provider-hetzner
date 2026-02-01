@@ -41,23 +41,25 @@ func (hw *HetznerBareMetalHostWebhook) SetupWebhookWithManager(mgr ctrl.Manager)
 
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(&HetznerBareMetalHost{}).
+		WithDefaulter(hw).
 		WithValidator(hw).
 		Complete()
 }
 
 //+kubebuilder:webhook:path=/mutate-infrastructure-cluster-x-k8s-io-v1beta1-hetznerbaremetalhost,mutating=true,failurePolicy=fail,sideEffects=None,groups=infrastructure.cluster.x-k8s.io,resources=hetznerbaremetalhosts,verbs=create;update,versions=v1beta1,name=mutation.hetznerbaremetalhost.infrastructure.cluster.x-k8s.io,admissionReviewVersions={v1,v1beta1}
 
-var _ webhook.Defaulter = &HetznerBareMetalHost{}
+var _ webhook.CustomDefaulter = &HetznerBareMetalHostWebhook{}
 
-// Default implements webhook.Defaulter so a webhook will be registered for the type.
-func (host *HetznerBareMetalHost) Default() {
+// Default implements webhook.CustomDefaulter so a webhook will be registered for the type.
+func (hw *HetznerBareMetalHostWebhook) Default(_ context.Context, _ runtime.Object) error {
+	return nil
 }
 
 //+kubebuilder:webhook:path=/validate-infrastructure-cluster-x-k8s-io-v1beta1-hetznerbaremetalhost,mutating=false,failurePolicy=fail,sideEffects=None,groups=infrastructure.cluster.x-k8s.io,resources=hetznerbaremetalhosts,verbs=create;update,versions=v1beta1,name=validation.hetznerbaremetalhost.infrastructure.cluster.x-k8s.io,admissionReviewVersions={v1,v1beta1}
 
 var _ webhook.CustomValidator = &HetznerBareMetalHostWebhook{}
 
-// ValidateCreate implements webhook.Validator so a webhook will be registered for the type.
+// ValidateCreate implements webhook.CustomValidator so a webhook will be registered for the type.
 func (hw *HetznerBareMetalHostWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	host, ok := (obj).(*HetznerBareMetalHost)
 	if !ok {
@@ -82,7 +84,7 @@ func (hw *HetznerBareMetalHostWebhook) ValidateCreate(ctx context.Context, obj r
 	return nil, aggregateObjErrors(hetznerBareMetalHostList.GroupVersionKind().GroupKind(), host.Name, allErrs)
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type.
+// ValidateUpdate implements webhook.CustomValidator so a webhook will be registered for the type.
 func (hw *HetznerBareMetalHostWebhook) ValidateUpdate(_ context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
 	oldHost, ok := oldObj.(*HetznerBareMetalHost)
 	if !ok {
@@ -105,7 +107,7 @@ func (hw *HetznerBareMetalHostWebhook) ValidateUpdate(_ context.Context, oldObj,
 	return nil, aggregateObjErrors(newHost.GroupVersionKind().GroupKind(), newHost.Name, allErrs)
 }
 
-// ValidateDelete implements webhook.Validator so a webhook will be registered for the type.
+// ValidateDelete implements webhook.CustomValidator so a webhook will be registered for the type.
 func (hw *HetznerBareMetalHostWebhook) ValidateDelete(_ context.Context, _ runtime.Object) (admission.Warnings, error) {
 	return nil, nil
 }

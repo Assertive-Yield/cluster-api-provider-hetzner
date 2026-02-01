@@ -24,8 +24,8 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	"sigs.k8s.io/cluster-api/util/conditions"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
+	conditions "sigs.k8s.io/cluster-api/util/conditions/deprecated/v1beta1"
 	"sigs.k8s.io/cluster-api/util/record"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -178,7 +178,7 @@ func (s *Service) setOwnerRemediatedCondition(ctx context.Context) error {
 	conditions.MarkFalse(
 		s.scope.Machine,
 		clusterv1.MachineOwnerRemediatedCondition,
-		clusterv1.WaitingForRemediationReason,
+		clusterv1.MachineOwnerRemediatedWaitingForRemediationReason,
 		clusterv1.ConditionSeverityWarning,
 		"",
 	)

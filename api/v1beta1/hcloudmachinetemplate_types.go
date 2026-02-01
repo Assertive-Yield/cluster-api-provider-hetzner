@@ -19,7 +19,7 @@ package v1beta1
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 )
 
 // HCloudMachineTemplateSpec defines the desired state of HCloudMachineTemplate.
@@ -71,6 +71,16 @@ func (r *HCloudMachineTemplate) GetConditions() clusterv1.Conditions {
 
 // SetConditions sets the underlying service state of the HCloudMachine to the predescribed clusterv1.Conditions.
 func (r *HCloudMachineTemplate) SetConditions(conditions clusterv1.Conditions) {
+	r.Status.Conditions = conditions
+}
+
+// GetV1Beta1Conditions returns the observations of the operational state of the HCloudMachineTemplate resource.
+func (r *HCloudMachineTemplate) GetV1Beta1Conditions() clusterv1.Conditions {
+	return r.Status.Conditions
+}
+
+// SetV1Beta1Conditions sets the underlying service state of the HCloudMachineTemplate to the predescribed clusterv1.Conditions.
+func (r *HCloudMachineTemplate) SetV1Beta1Conditions(conditions clusterv1.Conditions) {
 	r.Status.Conditions = conditions
 }
 

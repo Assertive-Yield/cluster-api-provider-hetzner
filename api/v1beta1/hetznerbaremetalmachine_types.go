@@ -24,7 +24,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/selection"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	capierrors "sigs.k8s.io/cluster-api/errors"
 )
 
@@ -346,6 +346,16 @@ func (bmMachine *HetznerBareMetalMachine) GetConditions() clusterv1.Conditions {
 
 // SetConditions sets the underlying service state of the HetznerBareMetalMachine to the predescribed clusterv1.Conditions.
 func (bmMachine *HetznerBareMetalMachine) SetConditions(conditions clusterv1.Conditions) {
+	bmMachine.Status.Conditions = conditions
+}
+
+// GetV1Beta1Conditions returns the observations of the operational state of the HetznerBareMetalMachine resource.
+func (bmMachine *HetznerBareMetalMachine) GetV1Beta1Conditions() clusterv1.Conditions {
+	return bmMachine.Status.Conditions
+}
+
+// SetV1Beta1Conditions sets the underlying service state of the HetznerBareMetalMachine to the predescribed clusterv1.Conditions.
+func (bmMachine *HetznerBareMetalMachine) SetV1Beta1Conditions(conditions clusterv1.Conditions) {
 	bmMachine.Status.Conditions = conditions
 }
 

@@ -1,3 +1,6 @@
+//go:build e2e
+// +build e2e
+
 /*
 Copyright 2022 The Kubernetes Authors.
 
@@ -26,7 +29,7 @@ import (
 	ginkgo "github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega/types"
 	corev1 "k8s.io/api/core/v1"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	"sigs.k8s.io/cluster-api/test/framework"
 	"sigs.k8s.io/cluster-api/util"
 )
@@ -120,9 +123,13 @@ func (m *validVersionMatcher) Match(_ interface{}) (success bool, err error) {
 }
 
 func (m *validVersionMatcher) FailureMessage(_ interface{}) (message string) {
-	return fmt.Sprintf("Expected\n%s\n%s", m.version, " to be a valid version ")
+	return fmt.Sprintf("Expected
+%s
+%s", m.version, " to be a valid version ")
 }
 
 func (m *validVersionMatcher) NegatedFailureMessage(_ interface{}) (message string) {
-	return fmt.Sprintf("Expected\n%s\n%s", m.version, " not to be a valid version ")
+	return fmt.Sprintf("Expected
+%s
+%s", m.version, " not to be a valid version ")
 }

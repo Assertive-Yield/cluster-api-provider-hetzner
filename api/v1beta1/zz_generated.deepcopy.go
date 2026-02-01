@@ -25,7 +25,7 @@ import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	apiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	"sigs.k8s.io/cluster-api/api/core/v1beta2"
 	"sigs.k8s.io/cluster-api/errors"
 )
 
@@ -99,7 +99,7 @@ func (in *ControllerGeneratedStatus) DeepCopyInto(out *ControllerGeneratedStatus
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make(apiv1beta1.Conditions, len(*in))
+		*out = make(v1beta2.Conditions, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -215,7 +215,7 @@ func (in *HCloudMachineStatus) DeepCopyInto(out *HCloudMachineStatus) {
 	*out = *in
 	if in.Addresses != nil {
 		in, out := &in.Addresses, &out.Addresses
-		*out = make([]apiv1beta1.MachineAddress, len(*in))
+		*out = make([]v1beta2.MachineAddress, len(*in))
 		copy(*out, *in)
 	}
 	if in.SSHKeys != nil {
@@ -240,7 +240,7 @@ func (in *HCloudMachineStatus) DeepCopyInto(out *HCloudMachineStatus) {
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make(apiv1beta1.Conditions, len(*in))
+		*out = make(v1beta2.Conditions, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -361,7 +361,7 @@ func (in *HCloudMachineTemplateStatus) DeepCopyInto(out *HCloudMachineTemplateSt
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make(apiv1beta1.Conditions, len(*in))
+		*out = make(v1beta2.Conditions, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -516,7 +516,7 @@ func (in *HCloudRemediationStatus) DeepCopyInto(out *HCloudRemediationStatus) {
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make(apiv1beta1.Conditions, len(*in))
+		*out = make(v1beta2.Conditions, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -872,12 +872,12 @@ func (in *HetznerBareMetalMachineStatus) DeepCopyInto(out *HetznerBareMetalMachi
 	}
 	if in.Addresses != nil {
 		in, out := &in.Addresses, &out.Addresses
-		*out = make([]apiv1beta1.MachineAddress, len(*in))
+		*out = make([]v1beta2.MachineAddress, len(*in))
 		copy(*out, *in)
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make(apiv1beta1.Conditions, len(*in))
+		*out = make(v1beta2.Conditions, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -1260,7 +1260,7 @@ func (in *HetznerClusterSpec) DeepCopyInto(out *HetznerClusterSpec) {
 	in.SSHKeys.DeepCopyInto(&out.SSHKeys)
 	if in.ControlPlaneEndpoint != nil {
 		in, out := &in.ControlPlaneEndpoint, &out.ControlPlaneEndpoint
-		*out = new(apiv1beta1.APIEndpoint)
+		*out = new(v1beta2.APIEndpoint)
 		**out = **in
 	}
 	in.ControlPlaneLoadBalancer.DeepCopyInto(&out.ControlPlaneLoadBalancer)
@@ -1304,14 +1304,14 @@ func (in *HetznerClusterStatus) DeepCopyInto(out *HetznerClusterStatus) {
 	}
 	if in.FailureDomains != nil {
 		in, out := &in.FailureDomains, &out.FailureDomains
-		*out = make(apiv1beta1.FailureDomains, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
+		*out = make([]v1beta2.FailureDomain, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make(apiv1beta1.Conditions, len(*in))
+		*out = make(v1beta2.Conditions, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}

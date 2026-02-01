@@ -80,7 +80,7 @@ func (r *HetznerBareMetalRemediationReconciler) Reconcile(ctx context.Context, r
 
 	key := client.ObjectKey{
 		Name:      machine.Spec.InfrastructureRef.Name,
-		Namespace: machine.Spec.InfrastructureRef.Namespace,
+		Namespace: machine.Namespace,
 	}
 
 	if err := r.Get(ctx, key, bareMetalMachine); err != nil {
@@ -170,6 +170,6 @@ func (r *HetznerBareMetalRemediationReconciler) SetupWithManager(ctx context.Con
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&infrav1.HetznerBareMetalRemediation{}).
 		WithOptions(options).
-		WithEventFilter(predicates.ResourceNotPausedAndHasFilterLabel(ctrl.LoggerFrom(ctx), r.WatchFilterValue)).
+		WithEventFilter(predicates.ResourceNotPausedAndHasFilterLabel(mgr.GetScheme(), ctrl.LoggerFrom(ctx), r.WatchFilterValue)).
 		Complete(r)
 }

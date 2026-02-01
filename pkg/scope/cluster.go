@@ -26,8 +26,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	"sigs.k8s.io/cluster-api/util/conditions"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
+	conditions "sigs.k8s.io/cluster-api/util/conditions/deprecated/v1beta1"
 	"sigs.k8s.io/cluster-api/util/patch"
 	"sigs.k8s.io/cluster-api/util/secret"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -133,11 +133,13 @@ func (s *ClusterScope) GetSpecRegion() []infrav1.Region {
 
 // SetStatusFailureDomain sets the region for the status.
 func (s *ClusterScope) SetStatusFailureDomain(regions []infrav1.Region) {
-	s.HetznerCluster.Status.FailureDomains = make(clusterv1.FailureDomains)
+	s.HetznerCluster.Status.FailureDomains = make([]clusterv1.FailureDomain, 0, len(regions))
 	for _, region := range regions {
-		s.HetznerCluster.Status.FailureDomains[string(region)] = clusterv1.FailureDomainSpec{
-			ControlPlane: true,
-		}
+		controlPlane := true
+		s.HetznerCluster.Status.FailureDomains = append(s.HetznerCluster.Status.FailureDomains, clusterv1.FailureDomain{
+			Name:         string(region),
+			ControlPlane: &controlPlane,
+		})
 	}
 }
 
@@ -195,7 +197,7 @@ func (s *ClusterScope) ListMachines(ctx context.Context) ([]*clusterv1.Machine, 
 	expectedGK := infrav1.GroupVersion.WithKind("HCloudMachine").GroupKind()
 	for pos := range machineListRaw.Items {
 		m := &machineListRaw.Items[pos]
-		actualGK := m.Spec.InfrastructureRef.GroupVersionKind().GroupKind()
+		actualGK := m.Spec.InfrastructureRef.GroupKind()
 		if m.Spec.ClusterName != s.Cluster.Name ||
 			actualGK.String() != expectedGK.String() {
 			continue

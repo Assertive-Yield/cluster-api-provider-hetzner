@@ -18,7 +18,7 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 )
 
 const (
@@ -85,7 +85,7 @@ type HetznerClusterStatus struct {
 	ControlPlaneLoadBalancer *LoadBalancerStatus `json:"controlPlaneLoadBalancer,omitempty"`
 	// +optional
 	HCloudPlacementGroups []HCloudPlacementGroupStatus `json:"hcloudPlacementGroups,omitempty"`
-	FailureDomains        clusterv1.FailureDomains     `json:"failureDomains,omitempty"`
+	FailureDomains        []clusterv1.FailureDomain    `json:"failureDomains,omitempty"`
 	Conditions            clusterv1.Conditions         `json:"conditions,omitempty"`
 }
 
@@ -127,6 +127,16 @@ func (r *HetznerCluster) GetConditions() clusterv1.Conditions {
 
 // SetConditions sets the underlying service state of the HetznerCluster to the predescribed clusterv1.Conditions.
 func (r *HetznerCluster) SetConditions(conditions clusterv1.Conditions) {
+	r.Status.Conditions = conditions
+}
+
+// GetV1Beta1Conditions returns the observations of the operational state of the HetznerCluster resource.
+func (r *HetznerCluster) GetV1Beta1Conditions() clusterv1.Conditions {
+	return r.Status.Conditions
+}
+
+// SetV1Beta1Conditions sets the underlying service state of the HetznerCluster to the predescribed clusterv1.Conditions.
+func (r *HetznerCluster) SetV1Beta1Conditions(conditions clusterv1.Conditions) {
 	r.Status.Conditions = conditions
 }
 

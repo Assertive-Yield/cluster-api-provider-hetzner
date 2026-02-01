@@ -19,7 +19,7 @@ package v1beta1
 import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	capierrors "sigs.k8s.io/cluster-api/errors"
 )
 
@@ -140,6 +140,16 @@ func (r *HCloudMachine) GetConditions() clusterv1.Conditions {
 
 // SetConditions sets the underlying service state of the HCloudMachine to the predescribed clusterv1.Conditions.
 func (r *HCloudMachine) SetConditions(conditions clusterv1.Conditions) {
+	r.Status.Conditions = conditions
+}
+
+// GetV1Beta1Conditions returns the observations of the operational state of the HCloudMachine resource.
+func (r *HCloudMachine) GetV1Beta1Conditions() clusterv1.Conditions {
+	return r.Status.Conditions
+}
+
+// SetV1Beta1Conditions sets the underlying service state of the HCloudMachine to the predescribed clusterv1.Conditions.
+func (r *HCloudMachine) SetV1Beta1Conditions(conditions clusterv1.Conditions) {
 	r.Status.Conditions = conditions
 }
 
