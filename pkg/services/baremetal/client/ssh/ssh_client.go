@@ -22,7 +22,6 @@ import (
 	"bytes"
 	"context"
 	_ "embed"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
@@ -535,14 +534,40 @@ chmod a+rx /root/check-disk.sh
 func (c *sshClient) UntarTGZ() Output {
 	// read tgz from container image.
 	fileName := "/installimage.tgz"
-	data, err := os.ReadFile(fileName)
+	file, err := os.Open(fileName)
 	if err != nil {
 		return Output{Err: fmt.Errorf("ReadInstallimageTgzFailed %s: %w", fileName, err)}
 	}
+	defer file.Close()
 
-	// send base64 encoded binary to machine via ssh.
-	return c.runSSH(fmt.Sprintf("echo %s | base64 -d | tar -xzf-",
-		base64.StdEncoding.EncodeToString(data)))
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return Output{Err: fmt.Errorf("StatInstallimageTgzFailed %s: %w", fileName, err)}
+	}
+
+	// Create SSH client for SCP transfer
+	client, err := c.getSSHClient()
+	if err != nil {
+		return Output{Err: fmt.Errorf("SSHClientFailed for SCP: %w", err)}
+	}
+	defer client.Close()
+
+	// Use SCP to copy the file to the remote server
+	// This avoids the ARG_MAX limit that occurs when embedding large base64 data in shell commands
+	scpClient, err := scp.NewClientBySSH(client)
+	if err != nil {
+		return Output{Err: fmt.Errorf("SCPClientFailed: %w", err)}
+	}
+	defer scpClient.Close()
+
+	remotePath := "/root/installimage.tgz"
+	err = scpClient.CopyFile(context.Background(), file, remotePath, fmt.Sprintf("%04o", fileInfo.Mode().Perm()))
+	if err != nil {
+		return Output{Err: fmt.Errorf("SCPCopyFailed: %w", err)}
+	}
+
+	// Extract the tgz file on the remote server
+	return c.runSSH(fmt.Sprintf("tar -xzf %s && rm %s", remotePath, remotePath))
 }
 
 // IsConnectionRefusedError checks whether the ssh error is a connection refused error.
