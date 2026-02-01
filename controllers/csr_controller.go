@@ -285,6 +285,7 @@ func getx509CSR(certificateSigningRequest *certificatesv1.CertificateSigningRequ
 // SetupWithManager sets up the controller with the Manager.
 func (r *GuestCSRReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager, options controller.Options) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		Named("csr-" + r.clusterName).
 		WithOptions(options).
 		For(&certificatesv1.CertificateSigningRequest{}).
 		WithEventFilter(predicates.ResourceNotPausedAndHasFilterLabel(mgr.GetScheme(), ctrl.LoggerFrom(ctx), r.WatchFilterValue)).
