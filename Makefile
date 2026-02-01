@@ -793,7 +793,7 @@ watch: ## Watch CRDs cluster, machines and Events.
 create-hetzner-installimage-tgz:
 	rm -rf data/hetzner-installimage*
 	cd data; \
-	  installimageurl=$$(curl -sL https://api.github.com/repos/syself/hetzner-installimage/releases/latest | jq -r .assets[].browser_download_url); \
+	  installimageurl=$$(curl -sL https://api.github.com/repos/Assertive-Yield/hetzner-installimage/releases/latest | jq -r .assets[].browser_download_url); \
 	  echo $$installimageurl; \
 	  curl -sSLO $$installimageurl
 	@if [ $$(tar -tzf data/hetzner-installimage*tgz| cut -d/ -f1| sort | uniq) != "hetzner-installimage" ]; then \
@@ -802,5 +802,5 @@ create-hetzner-installimage-tgz:
 	fi
 	@echo
 	@echo "============= ↓↓↓↓↓ Now update the version number here ↓↓↓↓↓ ============="
-	@git ls-files | xargs grep -P 'hetzner-installimage.*v\d+\.\d+' || true
+	@git ls-files | xargs grep -E 'hetzner-installimage.*v[0-9]+\.[0-9]+' || true
 	@echo "↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
