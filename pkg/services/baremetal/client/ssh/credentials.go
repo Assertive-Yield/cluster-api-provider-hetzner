@@ -46,7 +46,11 @@ func (creds Credentials) Validate() error {
 }
 
 // CredentialsFromSecret generates the credentials object from a secret and a secretRef.
+// Returns empty credentials if any required key is missing from the secret.
 func CredentialsFromSecret(secret *corev1.Secret, secretRef infrav1.SSHSecretRef) Credentials {
+	if secret == nil || secret.Data == nil {
+		return Credentials{}
+	}
 	return Credentials{
 		Name:       string(secret.Data[secretRef.Key.Name]),
 		PublicKey:  string(secret.Data[secretRef.Key.PublicKey]),

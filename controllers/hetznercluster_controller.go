@@ -159,7 +159,7 @@ func (r *HetznerClusterReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 	// check whether rate limit has been reached and if so, then wait.
 	if wait := reconcileRateLimit(hetznerCluster, r.RateLimitWaitTime); wait {
-		return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
+		return ctrl.Result{RequeueAfter: r.RateLimitWaitTime}, nil
 	}
 
 	// Handle deleted clusters
@@ -594,7 +594,8 @@ func (r *HetznerClusterReconciler) reconcileTargetClusterManager(ctx context.Con
 			return reconcile.Result{Requeue: true}, nil
 		}
 
-		r.targetClusterManagersStopCh[key] = make(chan struct{})
+		stopCh := make(chan struct{})
+		r.targetClusterManagersStopCh[key] = stopCh
 
 		ctx, cancel := context.WithCancel(ctx)
 
@@ -623,7 +624,7 @@ func (r *HetznerClusterReconciler) reconcileTargetClusterManager(ctx context.Con
 
 		// Cancel when stop channel received input
 		go func() {
-			<-r.targetClusterManagersStopCh[key]
+			<-stopCh
 			cancel()
 		}()
 	}

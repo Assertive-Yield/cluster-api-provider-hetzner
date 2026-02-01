@@ -43,8 +43,9 @@ func (e *RequeueAfterError) Error() string {
 }
 
 // Unwrap implements the error interface.
+// Returns nil as RequeueAfterError has no underlying error to unwrap.
 func (e *RequeueAfterError) Unwrap() error {
-	return fmt.Errorf("%s", e.Error())
+	return nil
 }
 
 // GetRequeueAfter gets the duration to wait until the managed object is

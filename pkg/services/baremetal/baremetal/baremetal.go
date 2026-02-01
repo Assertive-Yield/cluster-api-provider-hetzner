@@ -43,6 +43,7 @@ import (
 	conditions "sigs.k8s.io/cluster-api/util/conditions/deprecated/v1beta1"
 	"sigs.k8s.io/cluster-api/util/patch"
 	"sigs.k8s.io/cluster-api/util/record"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -642,21 +643,35 @@ func (s *Service) removeAttachedServerOfLoadBalancer(ctx context.Context, host *
 }
 
 func getLabelSelector(hbmm *infrav1.HetznerBareMetalMachine) labels.Selector {
+	log := ctrl.Log.WithName("baremetal").WithName("getLabelSelector")
 	labelSelector := labels.NewSelector()
 	var reqs labels.Requirements
 
 	for labelKey, labelVal := range hbmm.Spec.HostSelector.MatchLabels {
 		r, err := labels.NewRequirement(labelKey, selection.Equals, []string{labelVal})
-		if err == nil { // ignore invalid host selector
-			reqs = append(reqs, *r)
+		if err != nil {
+			log.V(1).Info("invalid host selector matchLabel ignored",
+				"machine", hbmm.Name,
+				"labelKey", labelKey,
+				"labelVal", labelVal,
+				"error", err.Error())
+			continue
 		}
+		reqs = append(reqs, *r)
 	}
 	for _, req := range hbmm.Spec.HostSelector.MatchExpressions {
 		lowercaseOperator := selection.Operator(strings.ToLower(string(req.Operator)))
 		r, err := labels.NewRequirement(req.Key, lowercaseOperator, req.Values)
-		if err == nil { // ignore invalid host selector
-			reqs = append(reqs, *r)
+		if err != nil {
+			log.V(1).Info("invalid host selector matchExpression ignored",
+				"machine", hbmm.Name,
+				"key", req.Key,
+				"operator", req.Operator,
+				"values", req.Values,
+				"error", err.Error())
+			continue
 		}
+		reqs = append(reqs, *r)
 	}
 
 	return labelSelector.Add(reqs...)

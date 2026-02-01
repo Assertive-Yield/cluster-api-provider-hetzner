@@ -62,28 +62,34 @@ func LabelSelectorToLabels(str string) (map[string]string, error) {
 	return labels, nil
 }
 
-// RemoveOwnerRefFromList removes the owner reference of a Kubernetes object.
+// RemoveOwnerRefFromList removes all matching owner references from a Kubernetes object.
+// This implementation uses a single-pass O(n) algorithm instead of recursive calls.
 func RemoveOwnerRefFromList(refList []metav1.OwnerReference, name, kind, apiVersion string) []metav1.OwnerReference {
 	if len(refList) == 0 {
 		return refList
 	}
-	index, found := FindOwnerRefFromList(refList, name, kind, apiVersion)
-	// if owner ref is not found, return
-	if !found {
+
+	bGV, err := schema.ParseGroupVersion(apiVersion)
+	if err != nil {
+		// Return original list if apiVersion is invalid
 		return refList
 	}
 
-	// if it is the only owner ref, we can return an empty slice
-	if len(refList) == 1 {
-		return []metav1.OwnerReference{}
+	result := make([]metav1.OwnerReference, 0, len(refList))
+	for _, ref := range refList {
+		aGV, err := schema.ParseGroupVersion(ref.APIVersion)
+		if err != nil {
+			// Keep refs with invalid apiVersion
+			result = append(result, ref)
+			continue
+		}
+		// Skip refs that match the criteria (i.e., remove them)
+		if ref.Name == name && ref.Kind == kind && aGV.Group == bGV.Group {
+			continue
+		}
+		result = append(result, ref)
 	}
-
-	// remove owner ref from slice
-	refListLen := len(refList) - 1
-	refList[index] = refList[refListLen]
-	refList = refList[:refListLen]
-
-	return RemoveOwnerRefFromList(refList, name, kind, apiVersion)
+	return result
 }
 
 // FindOwnerRefFromList finds the owner ref of a Kubernetes object in a list of owner refs.
