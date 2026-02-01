@@ -270,6 +270,7 @@ func (s *Service) reconcileServices(ctx context.Context, lb *hcloud.LoadBalancer
 			ListenPort:      &toCreate[i],
 			DestinationPort: &destinationPort,
 			Proxyprotocol:   &proxyProtocol,
+			HealthCheck:     addServiceHealthCheckOptsFromSpec(s.scope.HetznerCluster.Spec.ControlPlaneLoadBalancer.HealthCheck, destinationPort),
 		}
 		if err := s.scope.HCloudClient.AddServiceToLoadBalancer(ctx, lb, serviceOpts); err != nil {
 			// return immediately on rate limit
@@ -322,6 +323,15 @@ func createOptsFromSpec(hc *infrav1.HetznerCluster) hcloud.LoadBalancerCreateOpt
 
 	listenPort := int(hc.Spec.ControlPlaneEndpoint.Port)
 	publicInterface := true
+
+	service := hcloud.LoadBalancerCreateOptsService{
+		Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
+		ListenPort:      &listenPort,
+		DestinationPort: &hc.Spec.ControlPlaneLoadBalancer.Port,
+		Proxyprotocol:   &proxyprotocol,
+		HealthCheck:     healthCheckOptsFromSpec(hc.Spec.ControlPlaneLoadBalancer.HealthCheck, hc.Spec.ControlPlaneLoadBalancer.Port),
+	}
+
 	return hcloud.LoadBalancerCreateOpts{
 		LoadBalancerType: &hcloud.LoadBalancerType{Name: hc.Spec.ControlPlaneLoadBalancer.Type},
 		Name:             name,
@@ -330,15 +340,53 @@ func createOptsFromSpec(hc *infrav1.HetznerCluster) hcloud.LoadBalancerCreateOpt
 		Network:          network,
 		Labels:           map[string]string{hc.ClusterTagKey(): string(infrav1.ResourceLifecycleOwned)},
 		PublicInterface:  &publicInterface,
-		Services: []hcloud.LoadBalancerCreateOptsService{
-			{
-				Protocol:        hcloud.LoadBalancerServiceProtocolTCP,
-				ListenPort:      &listenPort,
-				DestinationPort: &hc.Spec.ControlPlaneLoadBalancer.Port,
-				Proxyprotocol:   &proxyprotocol,
-			},
-		},
+		Services:         []hcloud.LoadBalancerCreateOptsService{service},
 	}
+}
+
+func healthCheckOptsFromSpec(hcSpec *infrav1.LoadBalancerHealthCheckSpec, port int) *hcloud.LoadBalancerCreateOptsServiceHealthCheck {
+	interval, timeout, retries := getHealthCheckValues(hcSpec)
+
+	return &hcloud.LoadBalancerCreateOptsServiceHealthCheck{
+		Protocol: hcloud.LoadBalancerServiceProtocolTCP,
+		Port:     &port,
+		Interval: &interval,
+		Timeout:  &timeout,
+		Retries:  &retries,
+	}
+}
+
+func addServiceHealthCheckOptsFromSpec(hcSpec *infrav1.LoadBalancerHealthCheckSpec, port int) *hcloud.LoadBalancerAddServiceOptsHealthCheck {
+	interval, timeout, retries := getHealthCheckValues(hcSpec)
+
+	return &hcloud.LoadBalancerAddServiceOptsHealthCheck{
+		Protocol: hcloud.LoadBalancerServiceProtocolTCP,
+		Port:     &port,
+		Interval: &interval,
+		Timeout:  &timeout,
+		Retries:  &retries,
+	}
+}
+
+func getHealthCheckValues(hcSpec *infrav1.LoadBalancerHealthCheckSpec) (interval, timeout time.Duration, retries int) {
+	// Default values
+	interval = 15 * time.Second
+	timeout = 10 * time.Second
+	retries = 3
+
+	if hcSpec != nil {
+		if hcSpec.Interval > 0 {
+			interval = time.Duration(hcSpec.Interval) * time.Second
+		}
+		if hcSpec.Timeout > 0 {
+			timeout = time.Duration(hcSpec.Timeout) * time.Second
+		}
+		if hcSpec.Retries > 0 {
+			retries = hcSpec.Retries
+		}
+	}
+
+	return interval, timeout, retries
 }
 
 // Delete implements the deletion of HCloud load balancers.

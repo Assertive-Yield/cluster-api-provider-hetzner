@@ -179,6 +179,32 @@ type LoadBalancerSpec struct {
 
 	// Region contains the name of the HCloud location where the load balancer is running.
 	Region Region `json:"region,omitempty"`
+
+	// HealthCheck defines the health check configuration for the load balancer.
+	// +optional
+	HealthCheck *LoadBalancerHealthCheckSpec `json:"healthCheck,omitempty"`
+}
+
+// LoadBalancerHealthCheckSpec defines the health check configuration for the load balancer.
+type LoadBalancerHealthCheckSpec struct {
+	// Interval defines the interval in seconds between health checks. The default value is 15.
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:default=15
+	Interval int `json:"interval,omitempty"`
+
+	// Timeout defines the timeout in seconds for each health check. The default value is 10.
+	// Timeout must be less than or equal to Interval.
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:default=10
+	Timeout int `json:"timeout,omitempty"`
+
+	// Retries defines the number of retries before a target is marked as unhealthy. The default value is 3.
+	// +optional
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:default=3
+	Retries int `json:"retries,omitempty"`
 }
 
 // LoadBalancerServiceSpec defines a load balancer Target.

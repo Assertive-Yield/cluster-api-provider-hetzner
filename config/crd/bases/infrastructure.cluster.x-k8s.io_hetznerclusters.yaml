@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.19.0
+    controller-gen.kubebuilder.io/version: v0.17.2
   name: hetznerclusters.infrastructure.cluster.x-k8s.io
 spec:
   group: infrastructure.cluster.x-k8s.io
@@ -139,6 +139,30 @@ spec:
                           type: string
                       type: object
                     type: array
+                  healthCheck:
+                    description: HealthCheck defines the health check configuration
+                      for the load balancer.
+                    properties:
+                      interval:
+                        default: 15
+                        description: Interval defines the interval in seconds between
+                          health checks. The default value is 15.
+                        minimum: 1
+                        type: integer
+                      retries:
+                        default: 3
+                        description: Retries defines the number of retries before
+                          a target is marked as unhealthy. The default value is 3.
+                        minimum: 1
+                        type: integer
+                      timeout:
+                        default: 10
+                        description: |-
+                          Timeout defines the timeout in seconds for each health check. The default value is 10.
+                          Timeout must be less than or equal to Interval.
+                        minimum: 1
+                        type: integer
+                    type: object
                   name:
                     description: Name defines the name of the load balancer. It can
                       be specified in order to use an existing load balancer.

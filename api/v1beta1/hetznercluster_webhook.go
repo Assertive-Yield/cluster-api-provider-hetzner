@@ -120,6 +120,17 @@ func (v *hetznerClusterValidator) ValidateCreate(_ context.Context, obj runtime.
 		}
 	}
 
+	// Validate health check configuration
+	if hc := r.Spec.ControlPlaneLoadBalancer.HealthCheck; hc != nil {
+		if hc.Timeout > hc.Interval {
+			allErrs = append(allErrs, field.Invalid(
+				field.NewPath("spec", "controlPlaneLoadBalancer", "healthCheck", "timeout"),
+				hc.Timeout,
+				"timeout must be less than or equal to interval"),
+			)
+		}
+	}
+
 	// Check whether regions are all in same network zone
 	if !r.Spec.HCloudNetwork.Enabled {
 		if err := isNetworkZoneSameForAllRegions(r.Spec.ControlPlaneRegions, nil); err != nil {
