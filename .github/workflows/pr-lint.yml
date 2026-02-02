@@ -22,7 +22,7 @@ jobs:
     name: "Lint Pull Request"
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/syself/caph-builder:1.0.26
+      image: ghcr.io/assertive-yield/caph-builder:2.0.0
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'Assertive-Yield/cluster-api-provider-hetzner'
     container:
-      image: ghcr.io/Assertive-Yield/caph-builder:1.0.26
+      image: ghcr.io/Assertive-Yield/caph-builder:2.0.0
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
