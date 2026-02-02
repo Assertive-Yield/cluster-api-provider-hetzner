@@ -1258,9 +1258,8 @@ func (s *Service) actionImageInstallingStartBackgroundProcess(ctx context.Contex
 				delay: 10 * time.Second,
 			}
 		}
-		delete(s.scope.HetznerBareMetalHost.Annotations, infrav1.WipeDiskAnnotation)
-		record.Eventf(s.scope.HetznerBareMetalHost, "WipeDiskDone", "WipeDisk %v was done. Annotation %q was removed.\n%s",
-			sliceOfWwns, infrav1.WipeDiskAnnotation, output)
+		record.Eventf(s.scope.HetznerBareMetalHost, "WipeDiskDone", "WipeDisk %v was done.\n%s",
+			sliceOfWwns, output)
 	}
 
 	// If there is a Linux OS on an other disk, then the reboot after the provisioning

@@ -15,7 +15,7 @@ You can set [Kubernetes Annotations](https://kubernetes.io/docs/concepts/overvie
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Description** | This annotation instructs the Syself CAPH Controller to wipe the disk before provisioning the machine.                                                                                                                                                                                                              |
 | **Value**       | You can use the string `"all"` or a space-separated list of WWNs. For example, `"10:00:00:05:1e:7a:7a:00 eui.00253885910c8cec 0x500a07511bb48b25"`. If the value is empty, no disks will be wiped. The value `"all"` will wipe all disks on the bare-metal machine (not just the one given in the rootDeviceHints). |
-| **Auto-Remove** | Enabled: The annotation is removed after the disks are wiped.                                                                                                                                                                                                                                                       |
+| **Auto-Remove** | Disabled: The annotation remains on the resource.                                                                                                                                                                                                                                                       |
 
 ### capi.syself.com/ignore-check-disk
 
