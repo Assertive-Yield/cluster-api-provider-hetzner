@@ -37,9 +37,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	hcloudclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client"
-	"github.com/syself/cluster-api-provider-hetzner/test/helpers"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	hcloudclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/test/helpers"
 )
 
 const (

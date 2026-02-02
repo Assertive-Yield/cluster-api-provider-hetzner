@@ -5,7 +5,7 @@ sidebar: Management cluster setup
 description: Bootstrap a cluster, install and configure all the necessary components to make it function as a Cluster API management cluster.
 ---
 
-You have two options: either create a pure HCloud cluster or a hybrid cluster with Hetzner dedicated (bare metal) servers. For a full list of flavors, please check out the [release page](https://github.com/syself/cluster-api-provider-hetzner/releases). In the quickstart guide, we will go with the cluster creation on a pure Hetzner Cloud server.
+You have two options: either create a pure HCloud cluster or a hybrid cluster with Hetzner dedicated (bare metal) servers. For a full list of flavors, please check out the [release page](https://github.com/Assertive-Yield/cluster-api-provider-hetzner/releases). In the quickstart guide, we will go with the cluster creation on a pure Hetzner Cloud server.
 
 To create a workload cluster, we need to do some preparation:
 
@@ -41,7 +41,7 @@ It is a common practice to create a temporary, local bootstrap cluster, which is
 
 ### 1. Existing Management Cluster
 
-For production use, a “real” Kubernetes cluster should be used with appropriate backup and DR policies and procedures in place. The Kubernetes cluster must be at least a [supported version](https://github.com/syself/cluster-api-provider-hetzner/blob/main/README.md#%EF%B8%8F-compatibility-with-cluster-api-and-kubernetes-versions).
+For production use, a “real” Kubernetes cluster should be used with appropriate backup and DR policies and procedures in place. The Kubernetes cluster must be at least a [supported version](https://github.com/Assertive-Yield/cluster-api-provider-hetzner/blob/main/README.md#%EF%B8%8F-compatibility-with-cluster-api-and-kubernetes-versions).
 
 ### 2. Kind
 

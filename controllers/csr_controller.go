@@ -44,8 +44,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/csr"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/csr"
 )
 
 // ManagementCluster defines an interface.

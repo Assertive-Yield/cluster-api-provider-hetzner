@@ -31,9 +31,9 @@ import (
 	conditions "sigs.k8s.io/cluster-api/util/conditions/deprecated/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/scope"
-	fakeclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client/fake"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/scope"
+	fakeclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client/fake"
 )
 
 var _ = Describe("statusFromHCloudServer", func() {

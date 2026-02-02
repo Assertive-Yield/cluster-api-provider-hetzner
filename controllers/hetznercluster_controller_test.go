@@ -34,9 +34,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
-	"github.com/syself/cluster-api-provider-hetzner/test/helpers"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/utils"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/test/helpers"
 )
 
 func TestIgnoreInsignificantClusterStatusUpdates(t *testing.T) {
@@ -678,7 +678,7 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 				}, timeout, time.Second).Should(BeTrue())
 			})
 
-			It("should work with capi.syself.com/allow-empty-control-plane-address annotation error condition", func() {
+			It("should work with capi.assertiveyield.com/allow-empty-control-plane-address annotation error condition", func() {
 				instance.Annotations = make(map[string]string)
 				instance.Annotations[infrav1.AllowEmptyControlPlaneAddressAnnotation] = "true"
 				instance.Spec.ControlPlaneLoadBalancer.Enabled = false
@@ -694,7 +694,7 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 				}, timeout, time.Second).Should(BeTrue())
 			})
 
-			It("should work with capi.syself.com/allow-empty-control-plane-address annotation error condition custom port", func() {
+			It("should work with capi.assertiveyield.com/allow-empty-control-plane-address annotation error condition custom port", func() {
 				instance.Annotations = make(map[string]string)
 				instance.Annotations[infrav1.AllowEmptyControlPlaneAddressAnnotation] = "true"
 				instance.Spec.ControlPlaneLoadBalancer.Enabled = false
@@ -713,7 +713,7 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 				}, timeout, time.Second).Should(BeTrue())
 			})
 
-			It("should work with capi.syself.com/allow-empty-control-plane-address annotation success condition", func() {
+			It("should work with capi.assertiveyield.com/allow-empty-control-plane-address annotation success condition", func() {
 				instance.Annotations = make(map[string]string)
 				instance.Annotations[infrav1.AllowEmptyControlPlaneAddressAnnotation] = "true"
 				instance.Spec.ControlPlaneLoadBalancer.Enabled = false
@@ -1085,7 +1085,7 @@ var _ = Describe("HetznerCluster validation", func() {
 			Expect(testEnv.Create(ctx, hetznerCluster)).To(Succeed())
 		})
 
-		It("should succeed with capi.syself.com/allow-empty-control-plane-address annotation", func() {
+		It("should succeed with capi.assertiveyield.com/allow-empty-control-plane-address annotation", func() {
 			hetznerCluster.Annotations = make(map[string]string)
 			hetznerCluster.Annotations[infrav1.AllowEmptyControlPlaneAddressAnnotation] = "true"
 			hetznerCluster.Spec.ControlPlaneRegions = []infrav1.Region{}
@@ -1095,7 +1095,7 @@ var _ = Describe("HetznerCluster validation", func() {
 			Expect(testEnv.Create(ctx, hetznerCluster)).To(Succeed())
 		})
 
-		It("should succeed with capi.syself.com/allow-empty-control-plane-address annotation empty host", func() {
+		It("should succeed with capi.assertiveyield.com/allow-empty-control-plane-address annotation empty host", func() {
 			hetznerCluster.Annotations = make(map[string]string)
 			hetznerCluster.Annotations[infrav1.AllowEmptyControlPlaneAddressAnnotation] = "true"
 			hetznerCluster.Spec.ControlPlaneRegions = []infrav1.Region{}
@@ -1105,7 +1105,7 @@ var _ = Describe("HetznerCluster validation", func() {
 			Expect(testEnv.Create(ctx, hetznerCluster)).To(Succeed())
 		})
 
-		It("should succeed with capi.syself.com/allow-empty-control-plane-address annotation empty ControlPlaneEndpoint", func() {
+		It("should succeed with capi.assertiveyield.com/allow-empty-control-plane-address annotation empty ControlPlaneEndpoint", func() {
 			hetznerCluster.Annotations = make(map[string]string)
 			hetznerCluster.Annotations[infrav1.AllowEmptyControlPlaneAddressAnnotation] = "true"
 			hetznerCluster.Spec.ControlPlaneRegions = []infrav1.Region{}

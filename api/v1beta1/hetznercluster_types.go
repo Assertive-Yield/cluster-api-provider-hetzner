@@ -29,9 +29,9 @@ const (
 
 	// AllowEmptyControlPlaneAddressAnnotation allows HetznerCluster Webhook
 	// to skip some validation steps for externally managed control planes.
-	AllowEmptyControlPlaneAddressAnnotation = "capi.syself.com/allow-empty-control-plane-address"
+	AllowEmptyControlPlaneAddressAnnotation = "capi.assertiveyield.com/allow-empty-control-plane-address"
 	// ConstantBareMetalHostnameAnnotation makes hostnames of bare metal servers constant.
-	ConstantBareMetalHostnameAnnotation = "capi.syself.com/constant-bare-metal-hostname"
+	ConstantBareMetalHostnameAnnotation = "capi.assertiveyield.com/constant-bare-metal-hostname"
 )
 
 // HetznerClusterSpec defines the desired state of HetznerCluster.

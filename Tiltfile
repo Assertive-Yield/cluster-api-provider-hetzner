@@ -156,7 +156,7 @@ def caph():
     # Set up an image build for the provider. The live update configuration syncs the output from the local_resource
     # build into the container.
     docker_build_with_restart(
-        ref = "ghcr.io/syself/caph-staging",
+        ref = "ghcr.io/Assertive-Yield/caph-staging",
         context = "./.tiltbuild/",
         dockerfile_contents = tilt_dockerfile_header,
         target = "tilt",

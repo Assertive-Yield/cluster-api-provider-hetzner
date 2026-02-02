@@ -54,11 +54,9 @@ exclude = [
     "example.com",
     "cluster-api-provider-hetzner.git",
     "https://hetzner.cloud/",
-    "mailto:info@syself.com",
     "https://www.hetzner.com/*",
     "https://opensource.org/license/apache-2-0/",
-    "https://robot.your-server.de/*",
-    "https://www.linkedin.com/company/syself/",
+    "https://robot.your-server.de/*"
 ]
 
 include = []

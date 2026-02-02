@@ -28,7 +28,7 @@ import (
 	conditions "sigs.k8s.io/cluster-api/util/conditions/deprecated/v1beta1"
 	"sigs.k8s.io/cluster-api/util/record"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
 )
 
 const providerIDPrefix = "hcloud://"

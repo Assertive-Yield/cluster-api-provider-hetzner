@@ -41,10 +41,10 @@ const (
 
 	// WipeDiskAnnotation indicates which Disks (WWNs) to erase before provisioning
 	// The value is a list of WWNS or "all".
-	WipeDiskAnnotation = "capi.syself.com/wipe-disk"
+	WipeDiskAnnotation = "capi.assertiveyield.com/wipe-disk"
 
 	// IgnoreCheckDiskAnnotation indicates that the machine should get provisioned, even if CheckDisk fails.
-	IgnoreCheckDiskAnnotation = "capi.syself.com/ignore-check-disk"
+	IgnoreCheckDiskAnnotation = "capi.assertiveyield.com/ignore-check-disk"
 )
 
 // RootDeviceHints holds the hints for specifying the storage location

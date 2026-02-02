@@ -31,9 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/scope"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/remediation"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/scope"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/remediation"
 )
 
 // HetznerBareMetalRemediationReconciler reconciles a HetznerBareMetalRemediation object.

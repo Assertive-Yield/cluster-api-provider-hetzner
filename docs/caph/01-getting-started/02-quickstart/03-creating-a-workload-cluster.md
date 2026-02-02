@@ -24,7 +24,7 @@ Run the `clusterctl generate cluster --help` command for more information.
 
 {% callout %}
 
-Please note that ready-to-use Kubernetes configurations, production-ready node images, kubeadm configuration, cluster add-ons like CNI, and similar services need to be separately prepared or acquired to ensure a comprehensive and secure Kubernetes deployment. This is where **Syself Autopilot** comes into play, taking on these challenges to offer you a seamless, worry-free Kubernetes experience. Feel free to contact us via e-mail: <info@syself.com>.
+Please note that ready-to-use Kubernetes configurations, production-ready node images, kubeadm configuration, cluster add-ons like CNI, and similar services need to be separately prepared or acquired to ensure a comprehensive and secure Kubernetes deployment.
 
 {% /callout %}
 
@@ -87,9 +87,7 @@ You can, of course, also install an alternative CNI, e.g., calico.
 
 ### Deploy HCloud Cloud Controller Manager - _hcloud only_
 
-The following `make` command will install the CCM in your workload cluster:
-
-`make install-ccm-in-wl-cluster`
+TODO: You can use the official HCloud Cloud Controller Manager
 
 For a cluster without a private network, use the following command:
 

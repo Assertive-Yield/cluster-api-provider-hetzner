@@ -24,9 +24,9 @@ import (
 	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client/fake"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/machinetemplate"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client/fake"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/machinetemplate"
 )
 
 var _ = Describe("HCloudMachineTemplateReconciler", func() {

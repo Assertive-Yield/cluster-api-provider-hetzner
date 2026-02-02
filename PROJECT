@@ -2,7 +2,7 @@ domain: cluster.x-k8s.io
 layout:
 - go.kubebuilder.io/v3
 projectName: cluster-api-provider-hetzner
-repo: github.com/syself/cluster-api-provider-hetzner
+repo: github.com/Assertive-Yield/cluster-api-provider-hetzner
 resources:
 - api:
     crdVersion: v1
@@ -11,7 +11,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HetznerCluster
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -24,7 +24,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HetznerClusterTemplate
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -37,7 +37,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HCloudMachine
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -50,7 +50,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HCloudMachineTemplate
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -63,7 +63,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HetznerBareMetalMachineHost
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -76,7 +76,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HetznerBareMetalMachine
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -89,7 +89,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HetznerBareMetalMachineTemplate
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -102,7 +102,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HetznerBareMetalRemediationTemplate
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -115,7 +115,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HetznerBareMetalHost
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -128,7 +128,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HetznerBareMetalRemediation
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -141,7 +141,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HCloudRemediation
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true
@@ -154,7 +154,7 @@ resources:
   domain: cluster.x-k8s.io
   group: infrastructure
   kind: HCloudRemediationTemplate
-  path: github.com/syself/cluster-api-provider-hetzner/api/v1beta1
+  path: github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1
   version: v1beta1
   webhooks:
     defaulting: true

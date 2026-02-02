@@ -27,8 +27,8 @@ import (
 	"sigs.k8s.io/cluster-api/util/patch"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	hcloudclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	hcloudclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client"
 )
 
 // BareMetalMachineScopeParams defines the input parameters used to create a new Scope.

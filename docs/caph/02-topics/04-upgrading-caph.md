@@ -111,7 +111,7 @@ If you want to update only one components or update components one by one then t
 
 You can find the latest version of CAPH here:
 
-<https://github.com/syself/cluster-api-provider-hetzner/tags>
+<https://github.com/Assertive-Yield/cluster-api-provider-hetzner/tags>
 
 ```console
 $ clusterctl upgrade apply --infrastructure=hetzner:v1.0.1

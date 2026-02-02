@@ -11,7 +11,7 @@ This guide goes through all the necessary steps to create a cluster on Hetzner i
 
 {% callout %}
 
-The cluster templates used in the repository and in this guide for creating clusters are for development purposes only. These templates are not advised to be used in the production environment. However, the software is production-ready and users use it in their production environment. Make your clusters production-ready with the help of Syself Autopilot. For more information, contact <contact@syself.com>.
+The cluster templates used in the repository and in this guide for creating clusters are for development purposes only.
 
 {% /callout %}
 

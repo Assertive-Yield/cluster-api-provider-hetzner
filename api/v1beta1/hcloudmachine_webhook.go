@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
-	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/utils"
 )
 
 // log is for logging in this package.

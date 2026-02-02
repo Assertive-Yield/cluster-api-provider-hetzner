@@ -25,8 +25,8 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 
-	hcloudclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
+	hcloudclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/utils"
 )
 
 // DefaultCPUCores defines the default CPU cores for HCloud machines' capacities.

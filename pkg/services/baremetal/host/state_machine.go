@@ -26,8 +26,8 @@ import (
 	conditions "sigs.k8s.io/cluster-api/util/conditions/deprecated/v1beta1"
 	"sigs.k8s.io/cluster-api/util/record"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	sshclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	sshclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
 )
 
 // hostStateMachine is a finite state machine that manages transitions between

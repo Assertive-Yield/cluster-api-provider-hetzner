@@ -42,14 +42,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	// +kubebuilder:scaffold:imports
-	infrastructurev1beta1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/controllers"
-	secretutil "github.com/syself/cluster-api-provider-hetzner/pkg/secrets"
-	robotclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot"
-	sshclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
-	hcloudclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
-	caphversion "github.com/syself/cluster-api-provider-hetzner/pkg/version"
+	infrastructurev1beta1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/controllers"
+	secretutil "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/secrets"
+	robotclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot"
+	sshclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
+	hcloudclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/utils"
+	caphversion "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/version"
 )
 
 var (

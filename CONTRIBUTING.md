@@ -12,7 +12,7 @@ Read the following guide if you're interested in contributing to cluster-api-pro
 
 ## Finding Things That Need Help
 
-If you're new to the project and want to help, but don't know where to start, we have a semi-curated list of issues that should not need deep knowledge of the system. [Have a look and see if anything sounds interesting](https://github.com/syself/cluster-api-provider-hetzner/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+If you're new to the project and want to help, but don't know where to start, we have a semi-curated list of issues that should not need deep knowledge of the system. [Have a look and see if anything sounds interesting](https://github.com/Assertive-Yield/cluster-api-provider-hetzner/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
 
 Alternatively, read some of the docs on other controllers and try to write your own, file and fix any/all issues that come up, including gaps in documentation!
 
@@ -23,7 +23,6 @@ Help and contributions are very welcome in the form of code contributions but al
 
 1. If working on an issue, signal other contributors that you are actively working on it by commenting on it. Wait for approval in form of someone assigning you to the issue.
 2. Fork the desired repo, develop and test your code changes.
-    1. See the [Development Guide](https://syself.com/docs/caph/developers/development-guide) for more instructions on setting up your environment and testing changes locally.
 3. Submit a pull request.
     1. All code PR must be created in "draft mode". This helps other contributors by not blocking E2E tests, which cannot run in parallel. After your PR is approved, you can mark it "ready for review".
     1.  All code PR must be have a title starting with one of
@@ -40,5 +39,3 @@ Help and contributions are very welcome in the form of code contributions but al
     1. Ensure that commit message(s) are be meaningful and commit history is readable.
 
 All changes must be code reviewed. Coding conventions and standards are explained in the official [developer docs](https://github.com/kubernetes/community/tree/master/contributors/devel). Expect reviewers to request that you avoid common [go style mistakes](https://github.com/golang/go/wiki/CodeReviewComments) in your PRs.
-
-In case you want to run our E2E tests locally, please refer to [Testing](https://syself.com/docs/caph/developers/development-guide#submitting-prs-and-testing) guide. 

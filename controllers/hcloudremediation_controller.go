@@ -35,11 +35,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/scope"
-	secretutil "github.com/syself/cluster-api-provider-hetzner/pkg/secrets"
-	hcloudclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client"
-	hcloudremediation "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/remediation"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/scope"
+	secretutil "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/secrets"
+	hcloudclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client"
+	hcloudremediation "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/remediation"
 )
 
 // HCloudRemediationReconciler reconciles a HCloudRemediation object.

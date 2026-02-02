@@ -22,12 +22,12 @@ import (
 
 const (
 	// RebootAnnotation indicates that a bare metal host object should be rebooted.
-	RebootAnnotation = "capi.syself.com/reboot"
+	RebootAnnotation = "capi.assertiveyield.com/reboot"
 
 	// PermanentErrorAnnotation indicates that the bare metal host has an error which needs to be resolved manually.
 	// After the permanent error the annotation got removed (usually by a human), the controller removes
 	// ErrorType, ErrorCount and ErrorMessages, so that the hbmh will be usable again.
-	PermanentErrorAnnotation = "capi.syself.com/permanent-error"
+	PermanentErrorAnnotation = "capi.assertiveyield.com/permanent-error"
 )
 
 // HetznerBareMetalRemediationSpec defines the desired state of HetznerBareMetalRemediation.

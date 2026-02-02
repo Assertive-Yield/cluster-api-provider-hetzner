@@ -89,7 +89,7 @@ the current cluster. You can use it in both the management and workload clusters
 
 ## Submitting PRs and testing
 
-Pull requests and issues are highly encouraged! For more information, please have a look at the [Contribution Guidelines](https://github.com/syself/cluster-api-provider-hetzner/blob/main/CONTRIBUTING.md)
+Pull requests and issues are highly encouraged! For more information, please have a look at the [Contribution Guidelines](https://github.com/Assertive-Yield/cluster-api-provider-hetzner/blob/main/CONTRIBUTING.md)
 
 There are two important commands that you should make use of before creating the PR.
 

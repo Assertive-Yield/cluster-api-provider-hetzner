@@ -9,7 +9,7 @@ on:
       - "**/*.md"
 env:
   IMAGE_NAME: caph-staging
-  REGISTRY: ghcr.io/syself
+  REGISTRY: ghcr.io/Assertive-Yield
   metadata_flavor: latest=false
   metadata_tags: type=ref,event=pr
   registry_password: ${{ secrets.GITHUB_TOKEN }}

@@ -49,15 +49,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	secretutil "github.com/syself/cluster-api-provider-hetzner/pkg/secrets"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks"
-	robotmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/robot"
-	sshmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/ssh"
-	robotclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot"
-	sshclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
-	hcloudclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client"
-	fakeclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/client/fake"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	secretutil "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/secrets"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks"
+	robotmock "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/robot"
+	sshmock "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/ssh"
+	robotclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot"
+	sshclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
+	hcloudclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client"
+	fakeclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client/fake"
 )
 
 func init() {

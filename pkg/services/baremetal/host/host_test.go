@@ -28,12 +28,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	bmmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks"
-	robotmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/robot"
-	sshmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/ssh"
-	sshclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
-	"github.com/syself/cluster-api-provider-hetzner/test/helpers"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	bmmock "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks"
+	robotmock "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/robot"
+	sshmock "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/ssh"
+	sshclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/test/helpers"
 )
 
 var errTest = fmt.Errorf("test error")

@@ -40,13 +40,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/scope"
-	secretutil "github.com/syself/cluster-api-provider-hetzner/pkg/secrets"
-	bmclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client"
-	robotclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot"
-	sshclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/host"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/scope"
+	secretutil "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/secrets"
+	bmclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client"
+	robotclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot"
+	sshclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/host"
 )
 
 // HetznerBareMetalHostReconciler reconciles a HetznerBareMetalHost object.

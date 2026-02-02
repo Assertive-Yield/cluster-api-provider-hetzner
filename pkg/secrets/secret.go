@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/utils"
 )
 
 const (

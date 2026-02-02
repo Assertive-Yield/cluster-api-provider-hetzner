@@ -74,22 +74,6 @@ This requires a secret containing access credentials to both Hetzner Robot and H
 If you have configured your secret correctly in the previous step then you already have the secret in your cluster.
 Let's deploy the hetzner CCM helm chart.
 
-```shell
-helm repo add syself https://charts.syself.com
-helm repo update syself
-
-$ helm upgrade --install ccm syself/ccm-hetzner --version 1.1.10 \
-              --namespace kube-system \
-              --kubeconfig workload-kubeconfig
-Release "ccm" does not exist. Installing it now.
-NAME: ccm
-LAST DEPLOYED: Thu Apr  4 21:09:25 2024
-NAMESPACE: kube-system
-STATUS: deployed
-REVISION: 1
-TEST SUITE: None
-```
-
 ### Installing CNI
 
 For CNI, let's deploy cilium in the workload cluster that will facilitate the networking in the cluster.

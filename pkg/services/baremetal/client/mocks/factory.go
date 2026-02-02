@@ -18,10 +18,10 @@ limitations under the License.
 package mocks
 
 import (
-	robotmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/robot"
-	sshmock "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/ssh"
-	robotclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot"
-	sshclient "github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
+	robotmock "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/robot"
+	sshmock "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/mocks/ssh"
+	robotclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot"
+	sshclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
 )
 
 type sshFactory struct {

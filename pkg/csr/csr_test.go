@@ -25,7 +25,7 @@ import (
 	. "github.com/onsi/gomega"
 	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 
-	"github.com/syself/cluster-api-provider-hetzner/pkg/csr"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/csr"
 )
 
 var _ = Describe("Validate Kubelet CSR", func() {

@@ -40,7 +40,7 @@ trap 'remove_ssh_key ${SSH_KEY_NAME}' EXIT
 mkdir -p "$ARTIFACTS"
 echo "+ run tests!"
 
-IMAGE_PREFIX="${IMAGE_PREFIX:-ghcr.io/syself}"
+IMAGE_PREFIX="${IMAGE_PREFIX:-ghcr.io/Assertive-Yield}"
 
 if [[ -z "${TAG:-}" ]]; then
     echo

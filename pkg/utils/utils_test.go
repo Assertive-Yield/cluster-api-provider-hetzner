@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 
-	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/utils"
 )
 
 type testCaseLabelsToLabelSelector struct {

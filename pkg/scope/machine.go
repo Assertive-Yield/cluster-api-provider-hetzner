@@ -33,8 +33,8 @@ import (
 	conditions "sigs.k8s.io/cluster-api/util/conditions/deprecated/v1beta1"
 	"sigs.k8s.io/cluster-api/util/patch"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	secretutil "github.com/syself/cluster-api-provider-hetzner/pkg/secrets"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	secretutil "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/secrets"
 )
 
 // MachineScopeParams defines the input parameters used to create a new Scope.

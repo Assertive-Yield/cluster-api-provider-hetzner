@@ -17,13 +17,15 @@ limitations under the License.
 package loadbalancer
 
 import (
+	"time"
+
 	"github.com/go-logr/logr"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
 )
 
 var _ = Describe("Loadbalancer", func() {
@@ -98,6 +100,9 @@ var _ = Describe("createOptsFromSpec", func() {
 
 		publicInterface := true
 		proxyprotocol := false
+		healthCheckInterval := 15 * time.Second
+		healthCheckTimeout := 10 * time.Second
+		healthCheckRetries := 3
 
 		wantCreateOpts = hcloud.LoadBalancerCreateOpts{
 			LoadBalancerType: &hcloud.LoadBalancerType{Name: lbType},
@@ -113,6 +118,13 @@ var _ = Describe("createOptsFromSpec", func() {
 					ListenPort:      &controlPlaneEndpointPort,
 					DestinationPort: &lbPort,
 					Proxyprotocol:   &proxyprotocol,
+					HealthCheck: &hcloud.LoadBalancerCreateOptsServiceHealthCheck{
+						Protocol: hcloud.LoadBalancerServiceProtocolTCP,
+						Port:     &lbPort,
+						Interval: &healthCheckInterval,
+						Timeout:  &healthCheckTimeout,
+						Retries:  &healthCheckRetries,
+					},
 				},
 			},
 		}

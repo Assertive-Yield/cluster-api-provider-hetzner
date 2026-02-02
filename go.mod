@@ -1,4 +1,4 @@
-module github.com/syself/cluster-api-provider-hetzner
+module github.com/Assertive-Yield/cluster-api-provider-hetzner
 
 go 1.25.6
 

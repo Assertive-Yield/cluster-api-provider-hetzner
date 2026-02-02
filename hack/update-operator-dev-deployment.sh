@@ -17,7 +17,7 @@
 # a development cluster.
 # It takes the current code, creates a new image and updates the deployment.
 # By default the image will be uploaded to:
-# ghcr.io/syself/caph-staging:dev-$USER-YOUR_GIT_BRANCH
+# ghcr.io/Assertive-Yield/caph-staging:dev-$USER-YOUR_GIT_BRANCH
 # You can change the image path with the --image-path flag, if you want to use a different registry.
 
 # Usually it is better to write a test, than to use this script.
@@ -25,7 +25,7 @@
 trap 'echo "Warning: A command has failed. Exiting the script. Line was ($0:$LINENO): $(sed -n "${LINENO}p" "$0")"; exit 3' ERR
 set -Eeuo pipefail
 
-image_path="ghcr.io/syself"
+image_path="ghcr.io/Assertive-Yield"
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -48,7 +48,7 @@ if ! kubectl cluster-info >/dev/null; then
     echo
     echo "No kubernetes cluster found."
     echo "You can use alm to create a mgt-cluster"
-    echo "docs: https://github.com/syself/autopilot-lifecycle-manager"
+    echo "docs: https://github.com/Assertive-Yield/autopilot-lifecycle-manager"
     exit 1
 fi
 

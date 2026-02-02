@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
 )
 
 type autoSetupInput struct {

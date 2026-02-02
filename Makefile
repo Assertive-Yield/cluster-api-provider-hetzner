@@ -25,7 +25,6 @@ SHELL = /usr/bin/env bash -o pipefail
 .DEFAULT_GOAL:=help
 GOTEST ?= go test
 
-# https://github.com/syself/hetzner-cloud-controller-manager#networks-support
 PRIVATE_NETWORK ?= false
 
 ##@ General
@@ -182,7 +181,6 @@ undeploy-controller: ## Undeploy controller from the K8s cluster specified in ~/
 install-essentials: ## This gets the secret and installs a CNI and the CCM. Usage: MAKE install-essentials CLUSTER_NAME=<cluster-name>
 	$(MAKE) wait-and-get-secret CLUSTER_NAME=$(CLUSTER_NAME)
 	$(MAKE) install-cilium-in-wl-cluster
-	$(MAKE) install-ccm-in-wl-cluster
 
 wait-and-get-secret:
 	./hack/ensure-env-variables.sh CLUSTER_NAME
@@ -200,14 +198,6 @@ install-cilium-in-wl-cluster: $(HELM)
 	KUBECONFIG=$(WORKER_CLUSTER_KUBECONFIG) $(HELM) upgrade --install cilium cilium/cilium \
   		--namespace kube-system \
 		-f templates/cilium/cilium.yaml
-
-install-ccm-in-wl-cluster:
-	$(HELM) repo add syself https://charts.syself.com
-	$(HELM) repo update syself
-	KUBECONFIG=$(WORKER_CLUSTER_KUBECONFIG) $(HELM) upgrade --install ccm syself/ccm-hetzner --version 1.1.10 \
-	--namespace kube-system \
-	--set privateNetwork.enabled=$(PRIVATE_NETWORK)
-	@echo 'run "kubectl --kubeconfig=$(WORKER_CLUSTER_KUBECONFIG) ..." to work with the new target cluster'
 
 add-ssh-pub-key:
 	./hack/ensure-env-variables.sh HCLOUD_TOKEN SSH_KEY SSH_KEY_NAME
@@ -231,7 +221,6 @@ create-workload-cluster-hcloud: env-vars-for-wl-cluster $(KUSTOMIZE) $(ENVSUBST)
 	cat templates/cluster-templates/cluster-template-hcloud.yaml | $(ENVSUBST) - | $(KUBECTL) apply -f -
 	$(MAKE) wait-and-get-secret
 	$(MAKE) install-cilium-in-wl-cluster
-	$(MAKE) install-ccm-in-wl-cluster
 
 create-workload-cluster-hcloud-network: env-vars-for-wl-cluster $(KUSTOMIZE) $(ENVSUBST) ## Creates a workload-cluster.
 	# Create workload Cluster.
@@ -241,7 +230,6 @@ create-workload-cluster-hcloud-network: env-vars-for-wl-cluster $(KUSTOMIZE) $(E
 	cat templates/cluster-templates/cluster-template-hcloud-network.yaml | $(ENVSUBST) - | $(KUBECTL) apply -f -
 	$(MAKE) wait-and-get-secret
 	$(MAKE) install-cilium-in-wl-cluster
-	$(MAKE) install-ccm-in-wl-cluster PRIVATE_NETWORK=true
 
 create-workload-cluster-hetzner-hcloud-control-plane: env-vars-for-wl-cluster $(KUSTOMIZE) $(ENVSUBST) ## Creates a workload-cluster.
 	# Create workload Cluster.
@@ -252,7 +240,6 @@ create-workload-cluster-hetzner-hcloud-control-plane: env-vars-for-wl-cluster $(
 	cat templates/cluster-templates/cluster-template-$(INFRA_PROVIDER)-hcloud-control-planes.yaml | $(ENVSUBST) - | $(KUBECTL) apply -f -
 	$(MAKE) wait-and-get-secret
 	$(MAKE) install-cilium-in-wl-cluster
-	$(MAKE) install-ccm-in-wl-cluster
 
 create-workload-cluster-hetzner-baremetal-control-plane: env-vars-for-wl-cluster $(KUSTOMIZE) $(ENVSUBST) ## Creates a workload-cluster.
 	# Create workload Cluster.
@@ -263,7 +250,6 @@ create-workload-cluster-hetzner-baremetal-control-plane: env-vars-for-wl-cluster
 	cat templates/cluster-templates/cluster-template-$(INFRA_PROVIDER)-baremetal-control-planes.yaml | $(ENVSUBST) - | $(KUBECTL) apply -f -
 	$(MAKE) wait-and-get-secret
 	$(MAKE) install-cilium-in-wl-cluster
-	$(MAKE) install-ccm-in-wl-cluster
 
 create-workload-cluster-hetzner-baremetal-control-plane-remediation: env-vars-for-wl-cluster $(KUSTOMIZE) $(ENVSUBST) ## Creates a workload-cluster.
 	# Create workload Cluster.
@@ -274,7 +260,6 @@ create-workload-cluster-hetzner-baremetal-control-plane-remediation: env-vars-fo
 	cat templates/cluster-templates/cluster-template-$(INFRA_PROVIDER)-baremetal-control-planes-remediation.yaml | $(ENVSUBST) - | $(KUBECTL) apply -f -
 	$(MAKE) wait-and-get-secret
 	$(MAKE) install-cilium-in-wl-cluster
-	$(MAKE) install-ccm-in-wl-cluster
 
 move-to-workload-cluster: $(CLUSTERCTL)
 	$(CLUSTERCTL) init --kubeconfig=$(WORKER_CLUSTER_KUBECONFIG) --core cluster-api --bootstrap kubeadm --control-plane kubeadm --infrastructure $(INFRA_PROVIDER)

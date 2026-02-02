@@ -29,7 +29,7 @@
 # Bash Strict Mode: https://github.com/guettli/bash-strict-mode
 trap 'echo "Warning: A command has failed. Exiting the script. Line was ($0:$LINENO): $(sed -n "${LINENO}p" "$0")"; exit 3' ERR
 
-export BUILDER_IMAGE=ghcr.io/syself/caph-builder
+export BUILDER_IMAGE=ghcr.io/Assertive-Yield/caph-builder
 
 REPO_ROOT=$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")
 cd "${REPO_ROOT}" || exit 1
@@ -64,14 +64,14 @@ echo "$NEW_VERSION" >.builder-image-version.txt
 echo "Wrote new version $NEW_VERSION to .builder-image-version.txt"
 
 if
-  docker manifest inspect ghcr.io/syself/caph-builder:"${NEW_VERSION}" >/dev/null
+  docker manifest inspect ghcr.io/Assertive-Yield/caph-builder:"${NEW_VERSION}" >/dev/null
   echo $?
 then
 
   sed -i -e "/^BUILDER_IMAGE_VERSION /s/:=.*$/:= ${NEW_VERSION}/" Makefile
-  grep -r -E 'ghcr.io/syself/caph-builder:[0-9].*.*' -l | xargs sed -i -e "s/ghcr.io\/syself\/caph-builder:${VERSION}/ghcr.io\/syself\/caph-builder:${NEW_VERSION}/g"
-  docker build -t ghcr.io/syself/caph-builder:"${NEW_VERSION}" ./images/builder
-  docker push ghcr.io/syself/caph-builder:"${NEW_VERSION}"
+  grep -r -E 'ghcr.io/Assertive-Yield/caph-builder:[0-9].*.*' -l | xargs sed -i -e "s/ghcr.io\/Assertive-Yield\/caph-builder:${VERSION}/ghcr.io\/syself\/caph-builder:${NEW_VERSION}/g"
+  docker build -t ghcr.io/Assertive-Yield/caph-builder:"${NEW_VERSION}" ./images/builder
+  docker push ghcr.io/Assertive-Yield/caph-builder:"${NEW_VERSION}"
 else
   exit 1
 fi

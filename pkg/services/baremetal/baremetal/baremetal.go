@@ -47,10 +47,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/scope"
-	hcloudutil "github.com/syself/cluster-api-provider-hetzner/pkg/services/hcloud/util"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/utils"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/scope"
+	hcloudutil "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/util"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/utils"
 )
 
 // TODO: Implement logic for removal of unpaid servers.
@@ -497,7 +497,7 @@ func skipHost(labelSelector labels.Selector, hbmm *infrav1.HetznerBareMetalMachi
 		// the specified rootDeviceHints fit with the InstallImage configuration
 		// of the HetznerBareMetalMachine. If not, it is not valid.
 		// Doing that without first choosing the hbmh would be nice, there is a feature request:
-		// https://github.com/syself/cluster-api-provider-hetzner/issues/1166
+		// https://github.com/Assertive-Yield/cluster-api-provider-hetzner/issues/1166
 		// See "tworaidchecks" for the other place.
 		return false
 	}

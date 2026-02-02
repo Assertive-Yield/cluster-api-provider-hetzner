@@ -8,7 +8,7 @@
 
 # For creating local dev images run make e2e-image from the main CAPH repository
 images:
-  - name: ghcr.io/syself/caph-staging:${TAG}
+  - name: ghcr.io/Assertive-Yield/caph-staging:${TAG}
     loadBehavior: mustLoad
 providers:
   - name: cluster-api
@@ -65,7 +65,7 @@ providers:
     type: InfrastructureProvider
     versions:
       - name: ${CAPH_LATEST_VERSION} # latest published release
-        value: https://github.com/syself/cluster-api-provider-hetzner/releases/download/${CAPH_LATEST_VERSION}/infrastructure-components.yaml
+        value: https://github.com/Assertive-Yield/cluster-api-provider-hetzner/releases/download/${CAPH_LATEST_VERSION}/infrastructure-components.yaml
         type: "url"
         contract: v1beta1
         files:
@@ -86,8 +86,8 @@ providers:
         value: ../../../config/default
         contract: v1beta1
         replacements:
-          - old: ghcr.io/syself/caph-staging:latest
-            new: ghcr.io/syself/caph-staging:${TAG}
+          - old: ghcr.io/Assertive-Yield/caph-staging:latest
+            new: ghcr.io/Assertive-Yield/caph-staging:${TAG}
           - old: "imagePullPolicy: Always"
             new: "imagePullPolicy: IfNotPresent"
           - old: --metrics-bind-addr=localhost:8080
@@ -112,8 +112,8 @@ providers:
       #   value: ../../../config/default
       #   contract: v1beta1
       #   replacements:
-      #     - old: ghcr.io/syself/caph-staging:latest
-      #       new: ghcr.io/syself/caph-staging:${TAG}
+      #     - old: ghcr.io/Assertive-Yield/caph-staging:latest
+      #       new: ghcr.io/Assertive-Yield/caph-staging:${TAG}
       #     - old: "imagePullPolicy: Always"
       #       new: "imagePullPolicy: IfNotPresent"
       #     - old: --metrics-bind-addr=localhost:8080

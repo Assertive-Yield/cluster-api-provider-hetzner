@@ -62,7 +62,7 @@ clusterctl init --core cluster-api --bootstrap kubeadm --control-plane kubeadm -
 
 ```
 
-Or for a specific [version](https://github.com/syself/cluster-api-provider-hetzner/releases): `--infrastructure hetzner:vX.X.X`
+Or for a specific [version](https://github.com/Assertive-Yield/cluster-api-provider-hetzner/releases): `--infrastructure hetzner:vX.X.X`
 
 ---
 

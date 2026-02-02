@@ -19,8 +19,8 @@ package sshclient
 import (
 	corev1 "k8s.io/api/core/v1"
 
-	infrav1 "github.com/syself/cluster-api-provider-hetzner/api/v1beta1"
-	"github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client"
+	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client"
 )
 
 // Credentials defines the credentials for SSH calls specified in a secret.

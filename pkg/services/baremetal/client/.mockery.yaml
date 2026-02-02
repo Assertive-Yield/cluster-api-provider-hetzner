@@ -7,10 +7,10 @@ filename: "{{.InterfaceName}}.go"
 mockname: "{{.InterfaceName}}"
 outpkg: mocks
 packages:
-  github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh:
+  github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh:
     config:
       dir: mocks/ssh
 
-  github.com/syself/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot:
+  github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/robot:
     config:
       dir: mocks/robot
