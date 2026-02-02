@@ -8,9 +8,9 @@ jobs:
   scan:
     name: Trivy
     runs-on: ubuntu-latest
-    if: github.repository == 'Assertive-Yield/cluster-api-provider-hetzner'
+    if: github.repository == 'assertive-yield/cluster-api-provider-hetzner'
     container:
-      image: ghcr.io/Assertive-Yield/caph-builder:2.0.0
+      image: ghcr.io/assertive-yield/caph-builder:2.0.0
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}

@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 env:
   IMAGE_NAME: caph-staging
-  REGISTRY: ghcr.io/Assertive-Yield
+  REGISTRY: ghcr.io/assertive-yield
   metadata_flavor: latest=false
   metadata_tags: type=sha
   registry_password: ${{ secrets.GITHUB_TOKEN }}

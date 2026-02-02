@@ -12,7 +12,7 @@ concurrency:
 jobs:
   cache-cleaner:
     runs-on: ubuntu-24.04
-    if: github.repository == 'Assertive-Yield/cluster-api-provider-hetzner'
+    if: github.repository == 'assertive-yield/cluster-api-provider-hetzner'
     steps:
       # Load Golang cache build from GitHub
       - name: Load Caph Golang cache build from GitHub
