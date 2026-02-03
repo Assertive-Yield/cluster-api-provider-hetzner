@@ -39,10 +39,10 @@ FROM docker.io/aquasec/trivy:0.60.0 AS trivy
 
 # ============ Final image ============
 
-FROM docker.io/library/golang:1.25.6-bookworm
+FROM docker.io/library/golang:1.25.6-trixie
 
 # update: datasource=github-tags depName=adrienverge/yamllint versioning=semver
-ARG YAMLLINT_VERSION="v1.37.1"
+ARG YAMLLINT_VERSION="1.37.1"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     GOCACHE=/go/cache \
@@ -68,7 +68,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         unzip \
         zip && \
     pipx ensurepath && \
-    pipx install --global "yamllint==${YAMLLINT_VERSION#v}"
+    pipx install --global yamllint==${YAMLLINT_VERSION}
 
 # Install Go tools
 RUN go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.18.0
