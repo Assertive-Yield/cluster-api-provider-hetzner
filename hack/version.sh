@@ -26,6 +26,11 @@ version::get_version_vars() {
         GIT_TREE_STATE="dirty"
     fi
 
+    # Initialize defaults
+    GIT_VERSION="v0.0.0"
+    GIT_MAJOR="0"
+    GIT_MINOR="0"
+
     # borrowed from k8s.io/hack/lib/version.sh
     # Use git describe to find the version based on tags.
     if GIT_VERSION=$(git describe --tags --abbrev=14 2>/dev/null); then
@@ -62,9 +67,15 @@ version::get_version_vars() {
             echo "Please see more details here: https://semver.org"
             exit 1
         fi
+    else
+        # No tags found, use default version with commit hash
+        GIT_VERSION="v0.0.0-${GIT_COMMIT:0:14}"
+        if [[ "${GIT_TREE_STATE}" == "dirty" ]]; then
+            GIT_VERSION+="-dirty"
+        fi
     fi
 
-    GIT_RELEASE_TAG=$(git describe --abbrev=0 --tags)
+    GIT_RELEASE_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v0.0.0")
 }
 
 # borrowed from k8s.io/hack/lib/version.sh and modified

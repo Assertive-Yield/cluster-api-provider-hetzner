@@ -30,7 +30,7 @@ KUBEBUILDER_ASSETS=$(./hack/tools/bin/setup-envtest use --use-env \
 
 export KUBEBUILDER_ASSETS
 
-mkdir -p .coverage
+mkdir -p .coverage .reports
 
 hack/tools/bin/gotestsum \
     --jsonfile=.reports/go-test-output.json \
