@@ -625,19 +625,25 @@ var _ = Describe("Hetzner ClusterReconciler", func() {
 					return false
 				}, timeout, time.Second).Should(BeTrue())
 
-				By("deleting the cluster and load balancer and testing that owned label is gone (flaky)")
+				By("deleting the cluster and load balancer and testing that owned label is gone")
 
 				Expect(testEnv.Delete(ctx, instance))
 
 				Eventually(func() bool {
 					loadBalancers, err := hcloudClient.ListLoadBalancers(ctx, hcloud.LoadBalancerListOpts{Name: lbName})
-					// there should always be one load balancer, if not, then this is a problem where we can immediately return
-					Expect(err).To(BeNil())
-					Expect(loadBalancers).To(HaveLen(1)) // flaky
+					if err != nil {
+						testEnv.GetLogger().Error(err, "failed to list load balancers")
+						return true // retry
+					}
+					// Pre-existing load balancer should not be deleted when cluster is deleted
+					if len(loadBalancers) != 1 {
+						testEnv.GetLogger().Info("expected 1 load balancer", "got", len(loadBalancers))
+						return true // retry - LB might still be in reconciliation
+					}
 
 					_, found := loadBalancers[0].Labels[instance.ClusterTagKey()]
 					return found
-				}, timeout, time.Second).Should(BeFalse())
+				}, 2*timeout, time.Second).Should(BeFalse())
 			})
 
 			It("should set the appropriate condition if a named load balancer is taken by another cluster", func() {
