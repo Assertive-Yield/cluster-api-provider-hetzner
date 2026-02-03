@@ -12,79 +12,75 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This is the Dockerfile for the Builder Image that is used by the CI
-# pipelines.
-# If you make changes to this Dockerfile run `make builder-image-push`.
+# This is the Dockerfile for the Builder Image that is used by the CI pipelines.
 
-# Install Lychee
-FROM docker.io/library/alpine:3.21.3@sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c AS lychee
+# ============ Tool installation stages ============
+
+FROM docker.io/library/alpine:3.21.3 AS lychee
 # update: datasource=github-tags depName=lycheeverse/lychee versioning=semver
-ENV LYCHEE_VERSION="v0.15.1"
-# hadolint ignore=DL3018
+ARG LYCHEE_VERSION="v0.15.1"
 RUN apk add --no-cache curl && \
-    curl -L -o /tmp/lychee-${LYCHEE_VERSION}.tgz https://github.com/lycheeverse/lychee/releases/download/${LYCHEE_VERSION}/lychee-${LYCHEE_VERSION}-x86_64-unknown-linux-gnu.tar.gz && \
-    tar -xz -C /tmp -f /tmp/lychee-${LYCHEE_VERSION}.tgz && \
-    mv /tmp/lychee /usr/bin/lychee && \
-    rm -rf /tmp/linux-amd64 /tmp/lychee-${LYCHEE_VERSION}.tgz
+    curl -fsSL "https://github.com/lycheeverse/lychee/releases/download/${LYCHEE_VERSION}/lychee-${LYCHEE_VERSION}-x86_64-unknown-linux-gnu.tar.gz" | tar xz -C /usr/bin lychee
 
-# Install Golang CI Lint
-FROM docker.io/library/alpine:3.21.3@sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c AS golangci
+FROM docker.io/library/alpine:3.21.3 AS golangci
 # update: datasource=github-tags depName=golangci/golangci-lint versioning=semver
-ENV GOLANGCI_VERSION="v1.64.8"
-WORKDIR /
-# hadolint ignore=DL3018,DL4006
+ARG GOLANGCI_VERSION="v1.64.8"
 RUN apk add --no-cache curl && \
-    curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s ${GOLANGCI_VERSION}
+    curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s ${GOLANGCI_VERSION}
 
-# Install Hadolint
-FROM docker.io/hadolint/hadolint:v2.12.0-alpine@sha256:3c206a451cec6d486367e758645269fd7d696c5ccb6ff59d8b03b0e45268a199 AS hadolint
+FROM docker.io/library/alpine:3.21.3 AS helm
+# update: datasource=github-tags depName=helm/helm versioning=semver
+ARG HELM_VERSION="v3.18.6"
+RUN apk add --no-cache curl && \
+    curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" | tar xz -C /usr/bin --strip-components=1 linux-amd64/helm
 
-# Install Trivy
-FROM docker.io/aquasec/trivy:0.60.0@sha256:91c3a842834563a6860dbaec5af7c1949df5caf988f9632ef5cbb0a5cd59d8f8 AS trivy
+FROM docker.io/hadolint/hadolint:v2.12.0-alpine AS hadolint
+FROM docker.io/aquasec/trivy:0.60.0 AS trivy
 
-############################
-# Caph Build Image Base #
-############################
-FROM docker.io/library/golang:1.25.6-trixie
+# ============ Final image ============
 
-# update: datasource=repology depName=debian_11/skopeo versioning=loose
-ENV SKOPEO_VERSION="1.18.0+ds1-1+b5"
+FROM docker.io/library/golang:1.25.6-bookworm
+
 # update: datasource=github-tags depName=adrienverge/yamllint versioning=semver
-ENV YAMLLINT_VERSION="v1.37.1"
-# update: datasource=github-tags depName=opt-nc/yamlfixer versioning=semver
-ENV YAMLFIXER_VERSION="0.9.15"
+ARG YAMLLINT_VERSION="v1.37.1"
 
-# hadolint ignore=DL3008
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PIPX_HOME="/opt/pipx"
-ENV PIPX_BIN_DIR="/usr/local/bin"
-RUN apt-get update && \
+ENV DEBIAN_FRONTEND=noninteractive \
+    GOCACHE=/go/cache \
+    PIPX_HOME="/opt/pipx" \
+    PIPX_BIN_DIR="/usr/local/bin"
+
+# Install system packages in single layer
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
     apt-get install -qy --no-install-recommends \
-    gnupg python3 python3-pip \
-    file zip unzip jq gettext \
-    skopeo=${SKOPEO_VERSION} \
-    protobuf-compiler libprotobuf-dev \
-    libsystemd-dev jq  pipx && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+        file \
+        gettext \
+        gnupg \
+        jq \
+        libprotobuf-dev \
+        libsystemd-dev \
+        pipx \
+        protobuf-compiler \
+        python3 \
+        skopeo \
+        sudo \
+        unzip \
+        zip && \
     pipx ensurepath && \
-    pipx install --global yamllint==${YAMLLINT_VERSION} yamlfixer-opt-nc==${YAMLFIXER_VERSION}
+    pipx install --global "yamllint==${YAMLLINT_VERSION#v}"
 
-# Install controller-gen (current version)
+# Install Go tools
 RUN go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.18.0
 
-COPY --from=lychee /usr/bin/lychee /usr/bin/lychee
-COPY --from=golangci /bin/golangci-lint /usr/local/bin
-COPY --from=hadolint /bin/hadolint /usr/bin/hadolint
-COPY --from=trivy /usr/local/bin/trivy /usr/bin/trivy
-
-ENV GOCACHE=/go/cache
-
-## Install Helm
-# update: datasource=github-tags depName=helm/helm versioning=semver
-ENV HELM_VERSION="v3.18.6"
-RUN curl -sSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz | tar xz -C /usr/local/bin --strip-components=1 linux-amd64/helm
-RUN chmod a+rx /usr/local/bin/helm
+# Copy tools from builder stages
+COPY --from=lychee /usr/bin/lychee /usr/bin/
+COPY --from=golangci /bin/golangci-lint /usr/local/bin/
+COPY --from=helm /usr/bin/helm /usr/local/bin/
+COPY --from=hadolint /bin/hadolint /usr/bin/
+COPY --from=trivy /usr/local/bin/trivy /usr/bin/
 
 COPY build.sh /
 RUN chmod +x /build.sh
+
 ENTRYPOINT ["/build.sh"]
