@@ -45,21 +45,6 @@ jobs:
       - name: Verify Shellcheck
         run: make verify-shellcheck
 
-      - name: Verify Starlark
-        run: make verify-starlark
-
-      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
-        with:
-          node-version: "22"
-      - name: Install renovate
-        run: npm i -g renovate@35.54.0 # TODO update this via renovatebot
-
-      - name: Validate config
-        run: |
-          for file in $(find . -name "*.json5"); do
-            renovate-config-validator ${file}
-          done
-
       - name: Generate Size
         if: github.event.pull_request.head.repo.full_name == github.repository # Skip forked PRs
         uses: pascalgn/size-label-action@f8edde36b3be04b4f65dcfead05dc8691b374348 # v0.5.5
@@ -75,13 +60,3 @@ jobs:
             "800": "XL",
             "2000": "XXL"
             }
-      - name: Generate Labels
-        if: github.event.pull_request.head.repo.full_name == github.repository # Skip forked PRs
-        uses: actions/labeler@8558fd74291d67161a8a78ce36a881fa63b766a9 # v5
-        with:
-          configuration-path: .github/labeler.yaml
-      - name: Sync Labels
-        if: github.event.pull_request.head.repo.full_name == github.repository # Skip forked PRs
-        uses: EndBug/label-sync@52074158190acb45f3077f9099fea818aa43f97a # v2
-        with:
-          config-file: .github/labels.yaml

@@ -19,20 +19,25 @@ It is recommended that you have at least a basic understanding of Cluster API be
 
 This provider's versions are compatible with the following versions of Cluster API:
 
-|                                      | CAPI `v1beta1` (`v1.7.x`) | CAPI `v1beta1` (`v1.8.x`) |
-| ------------------------------------ | ------------------------- | ------------------------- |
-| Hetzner Provider `v1.0.0-beta.34-43` | ✅                        | ❌                        |
-| Hetzner Provider `v1.0.0`            | ✅                        | ✅                        |
-| Hetzner Provider `v1.0.1`            | ✅                        | ✅                        |
+|                                      | CAPI `v1beta2` (`v1.7.x`) | CAPI `v1beta1` (`v1.8.x`) | CAPI `v1beta2` (`v1.12.x`) |
+|--------------------------------------|---------------------------| ------------------------- |-------------------------|
+| Hetzner Provider `v1.0.0-beta.34-43` | ✅                         | ❌                        | ❌ |
+| Hetzner Provider `v1.0.0`            | ✅                         | ✅                        | ❌|
+| Hetzner Provider `v1.0.1`            | ✅                         | ✅                        | ❌|
+| Hetzner Provider `v2.0.0`            | ❌                         | ✅                        | ✅|
+
 
 This provider's versions can install and manage the following versions of Kubernetes:
 
-|                   | Hetzner Provider `v1.0.x` |
-| ----------------- | ------------------------- |
-| Kubernetes 1.28.x | ✅                        |
-| Kubernetes 1.29.x | ✅                        |
-| Kubernetes 1.30.x | ✅                        |
-| Kubernetes 1.31.x | ✅                        |
+|                   | Hetzner Provider `v2.0.x` |
+|-------------------|---------------------------|
+| Kubernetes 1.28.x | ✅                         |
+| Kubernetes 1.29.x | ✅                         |
+| Kubernetes 1.30.x | ✅                         |
+| Kubernetes 1.31.x | ✅                         |
+| Kubernetes 1.32.x | ✅                         |
+| Kubernetes 1.33.x | ✅                         |
+| Kubernetes 1.34.x | ✅                         |
 
 Test status:
 

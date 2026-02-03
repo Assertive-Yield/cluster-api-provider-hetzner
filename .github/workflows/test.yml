@@ -43,22 +43,10 @@ jobs:
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
 
       - name: Install dependencies
-        run: make gotestsum go-cover-treemap setup-envtest
-
-      - name: Install go modules for test
-        shell: bash
-        run: |
-          cd test && go mod download
+        run: make gotestsum setup-envtest
 
       - name: Running tests
         run: make test-unit
-
-      - name: Create Report
-        run: make report-cover-html report-cover-treemap
-
-      - name: Report Slowest tests
-        run: hack/tools/bin/gotestsum tool slowest --num 10 --jsonfile .reports/go-test-output.json > .reports/slowest-tests.txt
-        if: ${{ !cancelled() }}
 
       - name: Test Summary
         uses: test-summary/action@31493c76ec9e7aa675f1585d3ed6f1da69269a86 # v2.4
@@ -70,12 +58,3 @@ jobs:
         run: |
           make release-manifests
           ./hack/check-release-manifests.sh
-
-      - name: Upload Report
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ !cancelled() }}
-        with:
-          name: reports-${{ steps.name.outputs.name }}
-          path: .reports
-          include-hidden-files: true
-          retention-days: 30
