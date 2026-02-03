@@ -196,7 +196,10 @@ func GetDefaultHetznerClusterSpec() infrav1.HetznerClusterSpec {
 			Region: "fsn1",
 			Type:   "lb11",
 		},
-		ControlPlaneEndpoint: &clusterv1.APIEndpoint{},
+		ControlPlaneEndpoint: &clusterv1.APIEndpoint{
+			Host: "127.0.0.1",
+			Port: 6443,
+		},
 		ControlPlaneRegions:  []infrav1.Region{"fsn1"},
 		HCloudNetwork: infrav1.HCloudNetworkSpec{
 			CIDRBlock:       "10.0.0.0/16",

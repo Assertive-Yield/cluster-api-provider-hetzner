@@ -220,6 +220,15 @@ var _ = Describe("HetznerBareMetalMachineReconciler", func() {
 							Name:     bmMachineName,
 						},
 						FailureDomain: defaultFailureDomain,
+						// Use ConfigRef without DataSecretName to test "bootstrap not ready" scenario
+						// IsBootstrapReady() checks for DataSecretName != nil
+						Bootstrap: clusterv1.Bootstrap{
+							ConfigRef: clusterv1.ContractVersionedObjectReference{
+								APIGroup: "bootstrap.cluster.x-k8s.io",
+								Kind:     "KubeadmConfig",
+								Name:     "non-existent-config",
+							},
+						},
 					},
 				}
 				Expect(testEnv.Create(ctx, capiMachine)).To(Succeed())

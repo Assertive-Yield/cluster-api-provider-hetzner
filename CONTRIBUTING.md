@@ -25,16 +25,16 @@ Help and contributions are very welcome in the form of code contributions but al
 2. Fork the desired repo, develop and test your code changes.
 3. Submit a pull request.
     1. All code PR must be created in "draft mode". This helps other contributors by not blocking E2E tests, which cannot run in parallel. After your PR is approved, you can mark it "ready for review".
-    1.  All code PR must be have a title starting with one of
+    2. All code PR must be have a title starting with one of
         - ⚠️ (`:warning:`, major or breaking changes)
         - ✨ (`:sparkles:`, feature additions)
         - 🐛 (`:bug:`, patch and bugfixes)
         - 📖 (`:book:`, documentation or proposals)
         - 🌱 (`:seedling:`, minor or other)
-    2. If the PR requires additional action from users switching to a new release, include the string "action required" in the PR release-notes.
-    3. All code changes must be covered by unit tests and E2E tests.
-    4. All new features should come with user documentation.
-    5. Before finishing up your PR and requesting a final review, use `make verify` and `make test` to check whether your code complies with all of our standards and ensures that no unit tests fail.
+    3. If the PR requires additional action from users switching to a new release, include the string "action required" in the PR release-notes.
+    4. All code changes must be covered by unit tests and E2E tests.
+    5. All new features should come with user documentation.
+    6. Before finishing up your PR and requesting a final review, use `make verify` and `make test` to check whether your code complies with all of our standards and ensures that no unit tests fail.
 4. Once the PR has been reviewed and is ready to be merged, commits should be [squashed](https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md#squash-commits).
     1. Ensure that commit message(s) are be meaningful and commit history is readable.
 

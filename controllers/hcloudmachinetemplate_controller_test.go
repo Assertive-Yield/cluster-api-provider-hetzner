@@ -104,6 +104,9 @@ var _ = Describe("HCloudMachineTemplateReconciler", func() {
 					},
 					Spec: infrav1.HCloudMachineTemplateSpec{
 						Template: infrav1.HCloudMachineTemplateResource{
+							ObjectMeta: clusterv1.ObjectMeta{
+								Labels: map[string]string{"test": "label"},
+							},
 							Spec: infrav1.HCloudMachineSpec{
 								ImageName:          "my-control-plane",
 								Type:               "cpx31",
@@ -182,6 +185,9 @@ var _ = Describe("HCloudMachineTemplateReconciler", func() {
 					},
 					Spec: infrav1.HCloudMachineTemplateSpec{
 						Template: infrav1.HCloudMachineTemplateResource{
+							ObjectMeta: clusterv1.ObjectMeta{
+								Labels: map[string]string{"test": "label"},
+							},
 							Spec: infrav1.HCloudMachineSpec{
 								ImageName:          "my-control-plane",
 								Type:               "cpx31",
@@ -257,6 +263,9 @@ var _ = Describe("HCloudMachineTemplateReconciler", func() {
 					},
 					Spec: infrav1.HCloudMachineTemplateSpec{
 						Template: infrav1.HCloudMachineTemplateResource{
+							ObjectMeta: clusterv1.ObjectMeta{
+								Labels: map[string]string{"test": "label"},
+							},
 							Spec: infrav1.HCloudMachineSpec{
 								Type:      "cx41",
 								ImageName: "my-hcloud-image",

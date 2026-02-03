@@ -859,6 +859,10 @@ func nodeAddresses(host *infrav1.HetznerBareMetalHost, bareMetalMachineName stri
 	addrs := make([]clusterv1.MachineAddress, 0, len(host.Spec.Status.HardwareDetails.NIC)+2)
 
 	for _, nic := range host.Spec.Status.HardwareDetails.NIC {
+		// Skip NICs with empty IP addresses (CAPI v1.12 requires non-empty Address)
+		if nic.IP == "" {
+			continue
+		}
 		address := clusterv1.MachineAddress{
 			Type:    clusterv1.MachineInternalIP,
 			Address: nic.IP,
@@ -866,18 +870,20 @@ func nodeAddresses(host *infrav1.HetznerBareMetalHost, bareMetalMachineName stri
 		addrs = append(addrs, address)
 	}
 
-	// Add hostname == bareMetalMachineName as well
-	addrs = append(
-		addrs,
-		clusterv1.MachineAddress{
-			Type:    clusterv1.MachineHostName,
-			Address: bareMetalMachineName,
-		},
-		clusterv1.MachineAddress{
-			Type:    clusterv1.MachineInternalDNS,
-			Address: bareMetalMachineName,
-		},
-	)
+	// Add hostname == bareMetalMachineName as well (only if non-empty)
+	if bareMetalMachineName != "" {
+		addrs = append(
+			addrs,
+			clusterv1.MachineAddress{
+				Type:    clusterv1.MachineHostName,
+				Address: bareMetalMachineName,
+			},
+			clusterv1.MachineAddress{
+				Type:    clusterv1.MachineInternalDNS,
+				Address: bareMetalMachineName,
+			},
+		)
+	}
 
 	return addrs
 }
