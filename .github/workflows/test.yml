@@ -45,6 +45,9 @@ jobs:
       - name: Install dependencies
         run: make gotestsum setup-envtest
 
+      - name: Download CAPI CRDs for envtest
+        run: go mod download sigs.k8s.io/cluster-api
+
       - name: Running tests
         run: make test-unit
 

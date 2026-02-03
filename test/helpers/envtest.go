@@ -218,8 +218,13 @@ func (t *TestEnvironment) StartManager(ctx context.Context) error {
 
 // Stop stops the manager and cancels the context.
 func (t *TestEnvironment) Stop() error {
-	t.cancel()
-	return env.Stop()
+	if t != nil && t.cancel != nil {
+		t.cancel()
+	}
+	if env != nil {
+		return env.Stop()
+	}
+	return nil
 }
 
 // Cleanup deletes client objects.
