@@ -121,7 +121,7 @@ $(KUBECTL):
 GOTESTSUM := $(abspath $(TOOLS_BIN_DIR)/gotestsum)
 gotestsum: $(GOTESTSUM) # Build gotestsum from tools folder.
 $(GOTESTSUM):
-	go install gotest.tools/gotestsum@v1.11.0
+	go install gotest.tools/gotestsum@v1.13.0
 
 all-tools: $(GOTESTSUM) $(KUBECTL) $(CLUSTERCTL) $(SETUP_ENVTEST) $(ENVSUBST) $(KUSTOMIZE) $(CONTROLLER_GEN) $(HELM) ## Install all tools required for development
 	echo 'done'
