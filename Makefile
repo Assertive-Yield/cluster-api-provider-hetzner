@@ -137,6 +137,14 @@ PREVIOUS_TAG ?= $(shell git tag -l | grep -E "^v[0-9]+\.[0-9]+\.[0-9]." | sort -
 RELEASE_DIR ?= out
 RELEASE_NOTES_DIR := _releasenotes
 
+.PHONY: clean-release
+clean-release: ## Remove the release folder
+	rm -rf $(RELEASE_DIR)
+
+.PHONY: clean-release-git
+clean-release-git: ## Restores the git files usually modified during a release
+	git restore ./*manager_config_patch.yaml ./*manager_pull_policy.yaml
+
 $(RELEASE_DIR):
 	mkdir -p $(RELEASE_DIR)/
 
