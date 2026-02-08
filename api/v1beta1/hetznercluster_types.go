@@ -70,10 +70,22 @@ type HetznerClusterSpec struct {
 	SkipCreatingHetznerSecretInWorkloadCluster bool `json:"skipCreatingHetznerSecretInWorkloadCluster,omitempty"`
 }
 
+// HetznerClusterInitializationStatus provides observations of the HetznerCluster initialization process.
+type HetznerClusterInitializationStatus struct {
+	// Provisioned is true when the infrastructure provider reports that the cluster's infrastructure is fully provisioned.
+	// NOTE: this field is part of the Cluster API contract and is used to orchestrate provisioning.
+	// +optional
+	Provisioned *bool `json:"provisioned,omitempty"`
+}
+
 // HetznerClusterStatus defines the observed state of HetznerCluster.
 type HetznerClusterStatus struct {
 	// +kubebuilder:default=false
 	Ready bool `json:"ready"`
+
+	// Initialization provides observations of the HetznerCluster initialization process.
+	// +optional
+	Initialization *HetznerClusterInitializationStatus `json:"initialization,omitempty"`
 
 	// +optional
 	Network *NetworkStatus `json:"networkStatus,omitempty"`

@@ -241,6 +241,14 @@ func (r *HetznerClusterReconciler) reconcileNormal(ctx context.Context, clusterS
 	return reconcile.Result{}, nil
 }
 
+func setClusterProvisioned(hetznerCluster *infrav1.HetznerCluster, provisioned bool) {
+	hetznerCluster.Status.Ready = provisioned
+	if hetznerCluster.Status.Initialization == nil {
+		hetznerCluster.Status.Initialization = &infrav1.HetznerClusterInitializationStatus{}
+	}
+	hetznerCluster.Status.Initialization.Provisioned = &provisioned
+}
+
 func processControlPlaneEndpoint(hetznerCluster *infrav1.HetznerCluster) {
 	if hetznerCluster.Spec.ControlPlaneLoadBalancer.Enabled {
 		if hetznerCluster.Status.ControlPlaneLoadBalancer.IPv4 != "<nil>" {
@@ -261,7 +269,7 @@ func processControlPlaneEndpoint(hetznerCluster *infrav1.HetznerCluster) {
 				}
 			}
 			conditions.MarkTrue(hetznerCluster, infrav1.ControlPlaneEndpointSetCondition)
-			hetznerCluster.Status.Ready = true
+			setClusterProvisioned(hetznerCluster, true)
 		} else {
 			const msg = "enabled LoadBalancer but load balancer not ready yet"
 			conditions.MarkFalse(hetznerCluster,
@@ -269,12 +277,12 @@ func processControlPlaneEndpoint(hetznerCluster *infrav1.HetznerCluster) {
 				infrav1.ControlPlaneEndpointNotSetReason,
 				clusterv1.ConditionSeverityWarning,
 				msg)
-			hetznerCluster.Status.Ready = false
+			setClusterProvisioned(hetznerCluster, false)
 		}
 	} else {
 		if hetznerCluster.Spec.ControlPlaneEndpoint != nil && hetznerCluster.Spec.ControlPlaneEndpoint.Host != "" && hetznerCluster.Spec.ControlPlaneEndpoint.Port != 0 {
 			conditions.MarkTrue(hetznerCluster, infrav1.ControlPlaneEndpointSetCondition)
-			hetznerCluster.Status.Ready = true
+			setClusterProvisioned(hetznerCluster, true)
 		} else {
 			const msg = "disabled LoadBalancer and not yet provided ControlPlane endpoint"
 			conditions.MarkFalse(hetznerCluster,
@@ -282,7 +290,7 @@ func processControlPlaneEndpoint(hetznerCluster *infrav1.HetznerCluster) {
 				infrav1.ControlPlaneEndpointNotSetReason,
 				clusterv1.ConditionSeverityWarning,
 				msg)
-			hetznerCluster.Status.Ready = false
+			setClusterProvisioned(hetznerCluster, false)
 		}
 	}
 }
