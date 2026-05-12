@@ -18,6 +18,7 @@ package v1beta1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clusterv1beta1 "sigs.k8s.io/cluster-api/api/core/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 )
 
@@ -93,7 +94,10 @@ type HetznerClusterStatus struct {
 	ControlPlaneLoadBalancer *LoadBalancerStatus `json:"controlPlaneLoadBalancer,omitempty"`
 	// +optional
 	HCloudPlacementGroups []HCloudPlacementGroupStatus `json:"hcloudPlacementGroups,omitempty"`
-	FailureDomains        []clusterv1.FailureDomain    `json:"failureDomains,omitempty"`
+	// FailureDomains is keyed by the failure-domain name to satisfy the
+	// v1beta1 Cluster API infrastructure contract (the core Cluster
+	// controller reads this via a map accessor).
+	FailureDomains        clusterv1beta1.FailureDomains `json:"failureDomains,omitempty"`
 	Conditions            clusterv1.Conditions         `json:"conditions,omitempty"`
 }
 

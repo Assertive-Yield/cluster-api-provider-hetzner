@@ -26,6 +26,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	clusterv1beta1 "sigs.k8s.io/cluster-api/api/core/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	conditions "sigs.k8s.io/cluster-api/util/conditions/deprecated/v1beta1"
 	"sigs.k8s.io/cluster-api/util/patch"
@@ -133,13 +134,11 @@ func (s *ClusterScope) GetSpecRegion() []infrav1.Region {
 
 // SetStatusFailureDomain sets the region for the status.
 func (s *ClusterScope) SetStatusFailureDomain(regions []infrav1.Region) {
-	s.HetznerCluster.Status.FailureDomains = make([]clusterv1.FailureDomain, 0, len(regions))
+	s.HetznerCluster.Status.FailureDomains = make(clusterv1beta1.FailureDomains, len(regions))
 	for _, region := range regions {
-		controlPlane := true
-		s.HetznerCluster.Status.FailureDomains = append(s.HetznerCluster.Status.FailureDomains, clusterv1.FailureDomain{
-			Name:         string(region),
-			ControlPlane: &controlPlane,
-		})
+		s.HetznerCluster.Status.FailureDomains[string(region)] = clusterv1beta1.FailureDomainSpec{
+			ControlPlane: true,
+		}
 	}
 }
 

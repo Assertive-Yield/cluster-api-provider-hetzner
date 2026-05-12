@@ -189,13 +189,13 @@ func (m *MachineScope) GetFailureDomain() (string, error) {
 
 	// Read failure domains from HetznerCluster status (infrastructure provider)
 	failureDomainNames := make([]string, 0, len(m.HetznerCluster.Status.FailureDomains))
-	for _, fd := range m.HetznerCluster.Status.FailureDomains {
+	for name, fd := range m.HetznerCluster.Status.FailureDomains {
 		// filter out zones if we are a control plane and the cluster object
 		// wants to avoid control planes in that zone
-		if m.IsControlPlane() && (fd.ControlPlane == nil || !*fd.ControlPlane) {
+		if m.IsControlPlane() && !fd.ControlPlane {
 			continue
 		}
-		failureDomainNames = append(failureDomainNames, fd.Name)
+		failureDomainNames = append(failureDomainNames, name)
 	}
 
 	if len(failureDomainNames) == 0 {
