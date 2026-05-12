@@ -164,4 +164,15 @@ var _ = Describe("createOptsFromSpec", func() {
 		wantCreateOpts.Name = ""
 		Expect(createOpts).To(Equal(wantCreateOpts))
 	})
+
+	It("falls back to LB port when ControlPlaneEndpoint is nil", func() {
+		hetznerCluster.Spec.ControlPlaneEndpoint = nil
+		lbPort := hetznerCluster.Spec.ControlPlaneLoadBalancer.Port
+		wantCreateOpts.Services[0].ListenPort = &lbPort
+
+		createOpts := createOptsFromSpec(hetznerCluster)
+
+		createOpts.Name = ""
+		Expect(createOpts).To(Equal(wantCreateOpts))
+	})
 })

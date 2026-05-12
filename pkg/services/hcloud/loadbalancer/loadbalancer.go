@@ -321,7 +321,13 @@ func createOptsFromSpec(hc *infrav1.HetznerCluster) hcloud.LoadBalancerCreateOpt
 		network = &hcloud.Network{ID: hc.Status.Network.ID}
 	}
 
-	listenPort := int(hc.Spec.ControlPlaneEndpoint.Port)
+	// Default to the LB's own port. A user-provided ControlPlaneEndpoint with a
+	// non-zero port overrides it, but on fresh creation the endpoint is still
+	// nil because processControlPlaneEndpoint only runs after the LB exists.
+	listenPort := hc.Spec.ControlPlaneLoadBalancer.Port
+	if hc.Spec.ControlPlaneEndpoint != nil && hc.Spec.ControlPlaneEndpoint.Port != 0 {
+		listenPort = int(hc.Spec.ControlPlaneEndpoint.Port)
+	}
 	publicInterface := true
 
 	service := hcloud.LoadBalancerCreateOptsService{
