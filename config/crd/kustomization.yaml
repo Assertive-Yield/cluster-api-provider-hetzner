@@ -19,6 +19,12 @@ resources:
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
+  # Advertise v1beta2 provider contract for cluster CRDs while keeping
+  # v1beta1 (via commonLabels) for machine/remediation CRDs that have not
+  # been migrated yet. CAPI core picks the latest contract it supports,
+  # routing failureDomains through the v1beta2 list accessor.
+  - patches/contract_v1beta2_in_hetznerclusters.yaml
+  - patches/contract_v1beta2_in_hetznerclustertemplates.yaml
   # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
   # patches here are for enabling the conversion webhook for each CRD
   - patches/webhook_in_hetznerclusters.yaml
