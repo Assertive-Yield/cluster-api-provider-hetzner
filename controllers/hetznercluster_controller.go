@@ -37,6 +37,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	clusterv1 "sigs.k8s.io/cluster-api/api/core/v1beta2"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/cluster-api/util/annotations"
@@ -734,7 +735,15 @@ func (r *HetznerClusterReconciler) newTargetClusterManager(ctx context.Context, 
 			clusterName:      clusterScope.Cluster.Name,
 		}
 
-		if err := gr.SetupWithManager(ctx, clusterMgr, controller.Options{}); err != nil {
+		// SkipNameValidation: the CSR controller is named "csr-<cluster>", which
+		// is intentionally unique per cluster. When the per-cluster target manager
+		// goroutine exits and we recreate it on the next reconcile, the previous
+		// name registration is still in controller-runtime's global registry, so
+		// the validator would reject the duplicate even though it's the same
+		// logical controller being re-attached.
+		if err := gr.SetupWithManager(ctx, clusterMgr, controller.Options{
+			SkipNameValidation: ptr.To(true),
+		}); err != nil {
 			return nil, fmt.Errorf("failed to setup CSR controller: %w", err)
 		}
 	}
