@@ -182,6 +182,8 @@ type RebootType string
 const (
 	// RebootTypePower defines the power reboot. "Press power button of server".
 	RebootTypePower RebootType = "power"
+	// RebootTypePowerLong defines the long power-button reboot. "Press power button of server for several seconds" — a forced cold power-cycle, equivalent to the Robot UI "power off → power on".
+	RebootTypePowerLong RebootType = "power_long"
 	// RebootTypeSoftware defines the software reboot. "Send CTRL+ALT+DEL to the server".
 	RebootTypeSoftware RebootType = "sw"
 	// RebootTypeHardware defines the hardware reboot. "Execute an automatic hardware reset".
@@ -196,11 +198,12 @@ const (
 // The string is CamelCase.
 func VerboseRebootType(rebootType RebootType) string {
 	return map[RebootType]string{
-		RebootTypePower:    "Power",
-		RebootTypeSoftware: "Software",
-		RebootTypeHardware: "Hardware",
-		RebootTypeManual:   "Manual",
-		RebootTypeSSH:      "SSH",
+		RebootTypePower:     "Power",
+		RebootTypePowerLong: "PowerLong",
+		RebootTypeSoftware:  "Software",
+		RebootTypeHardware:  "Hardware",
+		RebootTypeManual:    "Manual",
+		RebootTypeSSH:       "SSH",
 	}[rebootType]
 }
 

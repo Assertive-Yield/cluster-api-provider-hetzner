@@ -452,20 +452,41 @@ func (s *Service) handleErrorTypeSSHRebootFailed(ctx context.Context, isSSHTimeo
 }
 
 func rebootAndErrorTypeAfterTimeout(host *infrav1.HetznerBareMetalHost) (infrav1.RebootType, infrav1.ErrorType) {
-	var rebootType infrav1.RebootType
-	var errorType infrav1.ErrorType
-	switch {
-	case host.HasSoftwareReboot():
-		rebootType = infrav1.RebootTypeSoftware
-		errorType = infrav1.ErrorTypeSoftwareRebootTriggered
-	case host.HasHardwareReboot():
-		rebootType = infrav1.RebootTypeHardware
-		errorType = infrav1.ErrorTypeHardwareRebootTriggered
-	default:
-		// this is very unexpected and indicates something to be seriously wrong
-		panic("no software or hardware reboot available for host")
+	if host.HasSoftwareReboot() {
+		return infrav1.RebootTypeSoftware, infrav1.ErrorTypeSoftwareRebootTriggered
 	}
-	return rebootType, errorType
+	return nonSoftwareRebootType(host), infrav1.ErrorTypeHardwareRebootTriggered
+}
+
+// nonSoftwareRebootType returns the most effective non-graceful reboot the
+// Hetzner Robot API offers for this server: power_long (forced cold cycle,
+// equivalent to the Robot UI "power off → power on") if available, then power
+// (short power-button press), then hw (IPMI reset) as a final fallback.
+//
+// On newer hardware lines (e.g. AX102) Hetzner does not expose "sw" and an
+// IPMI "hw" reset frequently fails to dislodge a UEFI stuck waiting for
+// PXE/disk after a fresh provisioning; only a real power-cycle reliably boots
+// the box into the rescue system. By preferring power* over hw here we avoid
+// the manual UI power-cycle workaround.
+func nonSoftwareRebootType(host *infrav1.HetznerBareMetalHost) infrav1.RebootType {
+	var hasPower, hasHW bool
+	for _, rt := range host.Spec.Status.RebootTypes {
+		switch rt {
+		case infrav1.RebootTypePowerLong:
+			return infrav1.RebootTypePowerLong
+		case infrav1.RebootTypePower:
+			hasPower = true
+		case infrav1.RebootTypeHardware:
+			hasHW = true
+		}
+	}
+	if hasPower {
+		return infrav1.RebootTypePower
+	}
+	if hasHW {
+		return infrav1.RebootTypeHardware
+	}
+	panic("no non-software reboot available for host")
 }
 
 func (s *Service) handleErrorTypeSoftwareRebootFailed(ctx context.Context, isSSHTimeoutError, wantsRescue bool) error {
@@ -484,14 +505,16 @@ func (s *Service) handleErrorTypeSoftwareRebootFailed(ctx context.Context, isSSH
 				return fmt.Errorf("failed to ensure rescue mode: %w", err)
 			}
 		}
-		// Perform hardware reboot
-		if _, err := s.scope.RobotClient.RebootBMServer(s.scope.HetznerBareMetalHost.Spec.ServerID, infrav1.RebootTypeHardware); err != nil {
+		// Escalate from sw to the strongest non-graceful reboot Hetzner offers
+		// (power_long > power > hw).
+		escalateType := nonSoftwareRebootType(s.scope.HetznerBareMetalHost)
+		if _, err := s.scope.RobotClient.RebootBMServer(s.scope.HetznerBareMetalHost.Spec.ServerID, escalateType); err != nil {
 			s.handleRobotRateLimitExceeded(err, rebootServerStr)
 			return fmt.Errorf(errMsgFailedReboot, err)
 		}
 		msg := fmt.Sprintf("Reboot via type 'software' into %s failed. Now using rebootType %q.",
-			rebootInto, infrav1.RebootTypeHardware)
-		msg = createRebootEvent(ctx, s.scope.HetznerBareMetalHost, infrav1.RebootTypeHardware, msg)
+			rebootInto, escalateType)
+		msg = createRebootEvent(ctx, s.scope.HetznerBareMetalHost, escalateType, msg)
 		// we immediately set an error message in the host status to track the reboot we just performed
 		s.scope.HetznerBareMetalHost.SetError(infrav1.ErrorTypeHardwareRebootTriggered, msg)
 	}
@@ -521,14 +544,16 @@ func (s *Service) handleErrorTypeHardwareRebootFailed(ctx context.Context, isSSH
 		t := metav1.Now()
 		s.scope.HetznerBareMetalHost.Spec.Status.LastUpdated = &t
 
-		// we immediately set an error message in the host status to track the reboot we just performed
-		if _, err := s.scope.RobotClient.RebootBMServer(s.scope.HetznerBareMetalHost.Spec.ServerID, infrav1.RebootTypeHardware); err != nil {
+		// Retry with the strongest non-graceful reboot type available
+		// (power_long > power > hw) — same selection as the initial pick.
+		retryType := nonSoftwareRebootType(s.scope.HetznerBareMetalHost)
+		if _, err := s.scope.RobotClient.RebootBMServer(s.scope.HetznerBareMetalHost.Spec.ServerID, retryType); err != nil {
 			s.handleRobotRateLimitExceeded(err, rebootServerStr)
 			return false, fmt.Errorf(errMsgFailedReboot, err)
 		}
 		msg := fmt.Sprintf("Reboot via ssh into %s failed. Now using rebootType %q.",
-			rebootInto, infrav1.RebootTypeHardware)
-		createRebootEvent(ctx, s.scope.HetznerBareMetalHost, infrav1.RebootTypeHardware, msg)
+			rebootInto, retryType)
+		createRebootEvent(ctx, s.scope.HetznerBareMetalHost, retryType, msg)
 	}
 
 	// if hardware reboots time out, we should fail

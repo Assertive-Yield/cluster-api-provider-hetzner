@@ -453,7 +453,7 @@ var _ = Describe("handleIncompleteBoot", func() {
 				hostErrorType:         infrav1.ErrorTypeSoftwareRebootTriggered,
 				lastUpdated:           time.Now().Add(-15 * time.Minute),
 				expectedHostErrorType: infrav1.ErrorTypeHardwareRebootTriggered,
-				expectedRebootType:    infrav1.RebootTypeHardware,
+				expectedRebootType:    infrav1.RebootTypePower,
 			}),
 			Entry("not timed out hw reset", testCaseHandleIncompleteBootDifferentTimeouts{
 				hostErrorType:         infrav1.ErrorTypeHardwareRebootTriggered,
