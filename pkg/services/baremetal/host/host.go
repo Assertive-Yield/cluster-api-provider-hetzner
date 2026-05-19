@@ -458,22 +458,19 @@ func rebootAndErrorTypeAfterTimeout(host *infrav1.HetznerBareMetalHost) (infrav1
 	return nonSoftwareRebootType(host), infrav1.ErrorTypeHardwareRebootTriggered
 }
 
-// nonSoftwareRebootType returns the most effective non-graceful reboot the
-// Hetzner Robot API offers for this server: power_long (forced cold cycle,
-// equivalent to the Robot UI "power off → power on") if available, then power
-// (short power-button press), then hw (IPMI reset) as a final fallback.
+// nonSoftwareRebootType picks the best non-"sw" reboot the Hetzner Robot API
+// offers for this server: power (short power-button press, ACPI graceful
+// reboot) if available, otherwise hw (IPMI reset).
 //
-// On newer hardware lines (e.g. AX102) Hetzner does not expose "sw" and an
-// IPMI "hw" reset frequently fails to dislodge a UEFI stuck waiting for
-// PXE/disk after a fresh provisioning; only a real power-cycle reliably boots
-// the box into the rescue system. By preferring power* over hw here we avoid
-// the manual UI power-cycle workaround.
+// power_long is intentionally never selected: despite the name, it simulates
+// holding the power button and forces a hard power-OFF — the server stays off
+// afterwards and the Robot API exposes no power-on counterpart. Some newer
+// Hetzner servers expose [power, power_long, hw, man] instead of the older
+// [sw, hw, man], so we treat "power" as the sw-equivalent on those.
 func nonSoftwareRebootType(host *infrav1.HetznerBareMetalHost) infrav1.RebootType {
 	var hasPower, hasHW bool
 	for _, rt := range host.Spec.Status.RebootTypes {
 		switch rt {
-		case infrav1.RebootTypePowerLong:
-			return infrav1.RebootTypePowerLong
 		case infrav1.RebootTypePower:
 			hasPower = true
 		case infrav1.RebootTypeHardware:

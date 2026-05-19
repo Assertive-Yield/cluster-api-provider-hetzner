@@ -182,7 +182,10 @@ type RebootType string
 const (
 	// RebootTypePower defines the power reboot. "Press power button of server".
 	RebootTypePower RebootType = "power"
-	// RebootTypePowerLong defines the long power-button reboot. "Press power button of server for several seconds" — a forced cold power-cycle, equivalent to the Robot UI "power off → power on".
+	// RebootTypePowerLong simulates holding the power button. WARNING: this is
+	// a forced power-OFF, not a power-cycle — the server stays off afterwards
+	// and the Robot API exposes no power-on counterpart. Do not use for
+	// automated reboot escalation; reserved for explicit operator intent.
 	RebootTypePowerLong RebootType = "power_long"
 	// RebootTypeSoftware defines the software reboot. "Send CTRL+ALT+DEL to the server".
 	RebootTypeSoftware RebootType = "sw"
