@@ -458,32 +458,28 @@ func rebootAndErrorTypeAfterTimeout(host *infrav1.HetznerBareMetalHost) (infrav1
 	return nonSoftwareRebootType(host), infrav1.ErrorTypeHardwareRebootTriggered
 }
 
-// nonSoftwareRebootType picks the best non-"sw" reboot the Hetzner Robot API
-// offers for this server: power (short power-button press, ACPI graceful
-// reboot) if available, otherwise hw (IPMI reset).
+// nonSoftwareRebootType returns the reboot type to use when a software reboot
+// ("sw", CTRL+ALT+DEL) is not available or has already failed. It always
+// returns hw (hardware reset): a true power-cycle that is supported by every
+// Hetzner server and reliably brings the machine back up.
 //
-// power_long is intentionally never selected: despite the name, it simulates
-// holding the power button and forces a hard power-OFF — the server stays off
-// afterwards and the Robot API exposes no power-on counterpart. Some newer
-// Hetzner servers expose [power, power_long, hw, man] instead of the older
-// [sw, hw, man], so we treat "power" as the sw-equivalent on those.
+// It deliberately never returns "power" or "power_long". Despite their names,
+// neither is a reboot:
+//   - "power" is a short power-button press. On a running server it sends an
+//     ACPI signal that triggers a regular OS shutdown — the server powers OFF
+//     and stays off (it only powers a server back ON when it is already off).
+//   - "power_long" simulates holding the button and forces an immediate
+//     power-OFF, also with no power-on counterpart.
+//
+// Newer Hetzner servers expose [power, power_long, hw, man] instead of the
+// older [sw, hw, man]. Treating "power" as an sw-equivalent reboot on those
+// (as we used to) shut the servers down during provisioning instead of
+// rebooting them, so we escalate straight to hw.
 func nonSoftwareRebootType(host *infrav1.HetznerBareMetalHost) infrav1.RebootType {
-	var hasPower, hasHW bool
-	for _, rt := range host.Spec.Status.RebootTypes {
-		switch rt {
-		case infrav1.RebootTypePower:
-			hasPower = true
-		case infrav1.RebootTypeHardware:
-			hasHW = true
-		}
-	}
-	if hasPower {
-		return infrav1.RebootTypePower
-	}
-	if hasHW {
+	if host.HasHardwareReboot() {
 		return infrav1.RebootTypeHardware
 	}
-	panic("no non-software reboot available for host")
+	panic("no hardware reboot available for host")
 }
 
 func (s *Service) handleErrorTypeSoftwareRebootFailed(ctx context.Context, isSSHTimeoutError, wantsRescue bool) error {
@@ -502,8 +498,8 @@ func (s *Service) handleErrorTypeSoftwareRebootFailed(ctx context.Context, isSSH
 				return fmt.Errorf("failed to ensure rescue mode: %w", err)
 			}
 		}
-		// Escalate from sw to the strongest non-graceful reboot Hetzner offers
-		// (power_long > power > hw).
+		// Escalate from sw to a hardware reset (the only safe non-sw reboot;
+		// see nonSoftwareRebootType).
 		escalateType := nonSoftwareRebootType(s.scope.HetznerBareMetalHost)
 		if _, err := s.scope.RobotClient.RebootBMServer(s.scope.HetznerBareMetalHost.Spec.ServerID, escalateType); err != nil {
 			s.handleRobotRateLimitExceeded(err, rebootServerStr)
@@ -541,8 +537,8 @@ func (s *Service) handleErrorTypeHardwareRebootFailed(ctx context.Context, isSSH
 		t := metav1.Now()
 		s.scope.HetznerBareMetalHost.Spec.Status.LastUpdated = &t
 
-		// Retry with the strongest non-graceful reboot type available
-		// (power_long > power > hw) — same selection as the initial pick.
+		// Retry with a hardware reset — same selection as the initial pick
+		// (see nonSoftwareRebootType).
 		retryType := nonSoftwareRebootType(s.scope.HetznerBareMetalHost)
 		if _, err := s.scope.RobotClient.RebootBMServer(s.scope.HetznerBareMetalHost.Spec.ServerID, retryType); err != nil {
 			s.handleRobotRateLimitExceeded(err, rebootServerStr)
