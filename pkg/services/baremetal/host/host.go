@@ -56,11 +56,15 @@ const (
 	softwareResetTimeout     time.Duration = 10 * time.Minute
 	hardwareResetTimeout     time.Duration = 10 * time.Minute
 	connectionRefusedTimeout time.Duration = 10 * time.Minute
-	rescue                   string        = "rescue"
-	rescuePort               int           = 22
-	gbToMebiBytes            int           = 1000
-	gbToBytes                int           = 1000000 * gbToMebiBytes
-	kikiToMebiBytes          int           = 1024
+	// powerOffWait is how long to wait after forcing a server off with a long
+	// power-button press before pressing the power button again to switch it back
+	// on, as part of a cold power cycle (see handleErrorTypePowerCycleForcedOff).
+	powerOffWait    time.Duration = 30 * time.Second
+	rescue          string        = "rescue"
+	rescuePort      int           = 22
+	gbToMebiBytes   int           = 1000
+	gbToBytes       int           = 1000000 * gbToMebiBytes
+	kikiToMebiBytes int           = 1024
 
 	errMsgFailedReboot                 = "failed to reboot bare metal server: %w"
 	errMsgInvalidSSHStdOut             = "invalid output in stdOut: %w"
@@ -413,6 +417,12 @@ func (s *Service) handleIncompleteBoot(ctx context.Context, isRebootIntoRescue, 
 
 	case infrav1.ErrorTypeHardwareRebootTriggered:
 		return s.handleErrorTypeHardwareRebootFailed(ctx, isTimeout, isRebootIntoRescue)
+
+	case infrav1.ErrorTypePowerCycleForcedOff:
+		return false, s.handleErrorTypePowerCycleForcedOff(ctx, isRebootIntoRescue)
+
+	case infrav1.ErrorTypePowerCycleOnTriggered:
+		return s.handleErrorTypePowerCycleOnTriggered(isRebootIntoRescue)
 	}
 
 	return false, fmt.Errorf("%w: %s", errUnexpectedErrorType, s.scope.HetznerBareMetalHost.Spec.Status.ErrorType)
@@ -452,29 +462,39 @@ func (s *Service) handleErrorTypeSSHRebootFailed(ctx context.Context, isSSHTimeo
 }
 
 func rebootAndErrorTypeAfterTimeout(host *infrav1.HetznerBareMetalHost) (infrav1.RebootType, infrav1.ErrorType) {
-	if host.HasSoftwareReboot() {
+	switch {
+	case host.HasSoftwareReboot():
 		return infrav1.RebootTypeSoftware, infrav1.ErrorTypeSoftwareRebootTriggered
+	case host.WantsColdPowerCycle():
+		// Start a cold power cycle: force the server off with a long power-button
+		// press. handleErrorTypePowerCycleForcedOff then switches it back on once
+		// it has powered down. A plain hardware reset does not (net)boot these
+		// newer servers into rescue, so a full off/on cycle is required.
+		return infrav1.RebootTypePowerLong, infrav1.ErrorTypePowerCycleForcedOff
+	default:
+		return nonSoftwareRebootType(host), infrav1.ErrorTypeHardwareRebootTriggered
 	}
-	return nonSoftwareRebootType(host), infrav1.ErrorTypeHardwareRebootTriggered
 }
 
 // nonSoftwareRebootType returns the reboot type to use when a software reboot
-// ("sw", CTRL+ALT+DEL) is not available or has already failed. It always
-// returns hw (hardware reset): a true power-cycle that is supported by every
-// Hetzner server and reliably brings the machine back up.
+// ("sw", CTRL+ALT+DEL) is not available or has already failed and the host does
+// not need a cold power cycle (see HetznerBareMetalHost.WantsColdPowerCycle). It
+// returns hw (hardware reset): a power-cycle supported by every Hetzner server.
 //
-// It deliberately never returns "power" or "power_long". Despite their names,
-// neither is a reboot:
+// It deliberately never returns "power" or "power_long" as a single-shot reboot.
+// Despite their names, neither is a reboot on its own:
 //   - "power" is a short power-button press. On a running server it sends an
 //     ACPI signal that triggers a regular OS shutdown — the server powers OFF
 //     and stays off (it only powers a server back ON when it is already off).
 //   - "power_long" simulates holding the button and forces an immediate
 //     power-OFF, also with no power-on counterpart.
 //
-// Newer Hetzner servers expose [power, power_long, hw, man] instead of the
-// older [sw, hw, man]. Treating "power" as an sw-equivalent reboot on those
-// (as we used to) shut the servers down during provisioning instead of
-// rebooting them, so we escalate straight to hw.
+// Newer Hetzner servers expose [power, power_long, hw, man] instead of [sw, hw,
+// man]. Treating "power" as an sw-equivalent reboot on those (as we used to)
+// shut the servers down during provisioning. Such servers are instead rebooted
+// via a cold power cycle (power_long then power) by rebootAndErrorTypeAfterTimeout
+// and the handleErrorTypePowerCycle* handlers; nonSoftwareRebootType handles the
+// remaining cases (e.g. sw servers escalating after a failed sw reboot).
 func nonSoftwareRebootType(host *infrav1.HetznerBareMetalHost) infrav1.RebootType {
 	if host.HasHardwareReboot() {
 		return infrav1.RebootTypeHardware
@@ -570,6 +590,71 @@ func (s *Service) handleErrorTypeHardwareRebootFailed(ctx context.Context, isSSH
 	}
 
 	return false, nil
+}
+
+// handleErrorTypePowerCycleForcedOff waits for a server that was forced off with
+// a long power-button press to power down, then switches it back on with a
+// power-button press. Together with handleErrorTypePowerCycleOnTriggered this
+// implements a cold power cycle (see HetznerBareMetalHost.WantsColdPowerCycle) -
+// the only sequence that reliably (net)boots newer Hetzner servers (which have
+// no software reboot and whose hardware reset does not boot into rescue) into
+// the rescue system.
+func (s *Service) handleErrorTypePowerCycleForcedOff(ctx context.Context, wantsRescue bool) error {
+	// Give the server time to fully power down before switching it back on.
+	if !hasTimedOut(s.scope.HetznerBareMetalHost.Spec.Status.LastUpdated, powerOffWait) {
+		return nil
+	}
+
+	rebootInto := "node"
+	if wantsRescue {
+		rebootInto = "rescue mode"
+		// Make sure rescue mode is active so the cold boot lands in rescue.
+		if err := s.ensureRescueMode(); err != nil {
+			return fmt.Errorf("failed to ensure rescue mode: %w", err)
+		}
+	}
+
+	// Press the power button to switch the (now powered-off) server back on.
+	if _, err := s.scope.RobotClient.RebootBMServer(s.scope.HetznerBareMetalHost.Spec.ServerID, infrav1.RebootTypePower); err != nil {
+		s.handleRobotRateLimitExceeded(err, rebootServerStr)
+		return fmt.Errorf(errMsgFailedReboot, err)
+	}
+
+	msg := fmt.Sprintf("Server forced off; now powering on into %s (cold power cycle).", rebootInto)
+	msg = createRebootEvent(ctx, s.scope.HetznerBareMetalHost, infrav1.RebootTypePower, msg)
+	// we immediately set an error message in the host status to track the reboot we just performed
+	s.scope.HetznerBareMetalHost.SetError(infrav1.ErrorTypePowerCycleOnTriggered, msg)
+	return nil
+}
+
+// handleErrorTypePowerCycleOnTriggered waits for a server that was switched back
+// on as part of a cold power cycle to boot. It must not press the power button
+// again while waiting, as that would toggle the running server back off (the
+// caller proceeds on its own once the server becomes reachable with the expected
+// hostname). If the server does not come up within hardwareResetTimeout, the
+// cold power cycle is considered failed.
+func (s *Service) handleErrorTypePowerCycleOnTriggered(wantsRescue bool) (bool, error) {
+	if !hasTimedOut(s.scope.HetznerBareMetalHost.Spec.Status.LastUpdated, hardwareResetTimeout) {
+		// Still booting - keep waiting.
+		return false, nil
+	}
+
+	msg := "cold power cycle timed out - please check if server is working properly"
+	if wantsRescue {
+		msg = "The rescue system could not be reached after a cold power cycle. Please ensure that the machine tries to boot from network before booting from disk. This setting needs to be enabled permanently in the BIOS."
+	}
+	conditions.MarkFalse(
+		s.scope.HetznerBareMetalHost,
+		infrav1.ProvisionSucceededCondition,
+		infrav1.RebootTimedOutReason,
+		clusterv1.ConditionSeverityError,
+		"%s",
+		msg,
+	)
+
+	record.Warn(s.scope.HetznerBareMetalHost, "PowerCycleTimedOut", msg)
+
+	return true, fmt.Errorf("cold power cycle timed out")
 }
 
 func hasTimedOut(lastUpdated *metav1.Time, timeout time.Duration) bool {

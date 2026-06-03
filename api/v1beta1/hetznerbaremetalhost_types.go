@@ -110,6 +110,17 @@ const (
 	// ErrorTypeHardwareRebootTriggered is an error condition that triggers the hardware reboot.
 	ErrorTypeHardwareRebootTriggered ErrorType = "hardware reboot triggered"
 
+	// ErrorTypePowerCycleForcedOff is set after a long power-button press (power_long)
+	// has forced a server off, while caph waits for it to fully power down before
+	// pressing the power button again to switch it back on. This cold power cycle is
+	// used for servers that have no software reboot and whose hardware reset does not
+	// (net)boot them into the rescue system — newer Hetzner servers that expose
+	// [power, power_long, hw, man] instead of [sw, hw, man].
+	ErrorTypePowerCycleForcedOff ErrorType = "power cycle: forced off, waiting to power on"
+	// ErrorTypePowerCycleOnTriggered is set after the power button has been pressed to
+	// switch a (forced-off) server back on, while caph waits for it to boot.
+	ErrorTypePowerCycleOnTriggered ErrorType = "power cycle: powered on, waiting for boot"
+
 	// ErrorTypeConnectionError ErrorType is an error condition indicating that the SSH command returned a connection refused error.
 	ErrorTypeConnectionError ErrorType = "connection refused error of SSH command"
 
@@ -558,6 +569,37 @@ func (host *HetznerBareMetalHost) HasHardwareReboot() bool {
 		}
 	}
 	return false
+}
+
+// HasPowerReboot returns a boolean indicating whether the "power" (short
+// power-button press) reset exists for the server.
+func (host *HetznerBareMetalHost) HasPowerReboot() bool {
+	for _, rt := range host.Spec.Status.RebootTypes {
+		if rt == RebootTypePower {
+			return true
+		}
+	}
+	return false
+}
+
+// HasPowerLongReboot returns a boolean indicating whether the "power_long"
+// (forced power-off) reset exists for the server.
+func (host *HetznerBareMetalHost) HasPowerLongReboot() bool {
+	for _, rt := range host.Spec.Status.RebootTypes {
+		if rt == RebootTypePowerLong {
+			return true
+		}
+	}
+	return false
+}
+
+// WantsColdPowerCycle reports whether the host must be rebooted via a cold power
+// cycle (a long power-button press to force it off, then a power-button press to
+// switch it back on) instead of sw/hw. This applies to servers that have no
+// software reboot but expose both the power and power_long buttons (newer Hetzner
+// servers), whose hardware reset does not (net)boot them into the rescue system.
+func (host *HetznerBareMetalHost) WantsColdPowerCycle() bool {
+	return !host.HasSoftwareReboot() && host.HasPowerReboot() && host.HasPowerLongReboot()
 }
 
 // NeedsProvisioning compares the settings with the provisioning

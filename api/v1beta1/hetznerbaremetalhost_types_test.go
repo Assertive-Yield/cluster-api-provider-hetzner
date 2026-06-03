@@ -238,6 +238,37 @@ var _ = Describe("Test HasHardwareReboot", func() {
 	)
 })
 
+var _ = Describe("Test WantsColdPowerCycle", func() {
+	type testCaseWantsColdPowerCycle struct {
+		rebootTypes []RebootType
+		expectBool  bool
+	}
+
+	DescribeTable("Test WantsColdPowerCycle",
+		func(tc testCaseWantsColdPowerCycle) {
+			host := HetznerBareMetalHost{}
+			host.Spec.Status.RebootTypes = tc.rebootTypes
+			Expect(host.WantsColdPowerCycle()).Should(Equal(tc.expectBool))
+		},
+		Entry("newer server [power, power_long, hw, man] - wants cold cycle", testCaseWantsColdPowerCycle{
+			rebootTypes: []RebootType{RebootTypePower, RebootTypePowerLong, RebootTypeHardware, RebootTypeManual},
+			expectBool:  true,
+		}),
+		Entry("older server [sw, hw, man] - no cold cycle", testCaseWantsColdPowerCycle{
+			rebootTypes: []RebootType{RebootTypeSoftware, RebootTypeHardware, RebootTypeManual},
+			expectBool:  false,
+		}),
+		Entry("has sw as well as power buttons - sw takes precedence, no cold cycle", testCaseWantsColdPowerCycle{
+			rebootTypes: []RebootType{RebootTypeSoftware, RebootTypePower, RebootTypePowerLong, RebootTypeHardware},
+			expectBool:  false,
+		}),
+		Entry("has power but not power_long - cannot force off, no cold cycle", testCaseWantsColdPowerCycle{
+			rebootTypes: []RebootType{RebootTypePower, RebootTypeHardware, RebootTypeManual},
+			expectBool:  false,
+		}),
+	)
+})
+
 var _ = Describe("Test NeedsProvisioning", func() {
 	type testCaseNeedsProvisioning struct {
 		installImage *InstallImage
