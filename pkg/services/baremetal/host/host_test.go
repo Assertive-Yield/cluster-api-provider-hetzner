@@ -410,6 +410,34 @@ var _ = Describe("handleIncompleteBoot", func() {
 				expectedHostErrorType: infrav1.ErrorTypeHardwareRebootTriggered,
 				expectedRebootType:    infrav1.RebootTypeHardware,
 			}),
+			// Newer Hetzner servers expose [power, power_long, hw, man] (no sw).
+			// power/power_long are shutdowns, so escalation must use hw, never power.
+			Entry("power-type host, ssh timeout, escalates to hw not power", testCaseHandleIncompleteBootDifferentResetTypes{
+				isTimeOut:           true,
+				isConnectionRefused: false,
+				rebootTypes: []infrav1.RebootType{
+					infrav1.RebootTypePower,
+					infrav1.RebootTypePowerLong,
+					infrav1.RebootTypeHardware,
+					infrav1.RebootTypeManual,
+				},
+				hostErrorType:         infrav1.ErrorTypeSSHRebootTriggered,
+				expectedHostErrorType: infrav1.ErrorTypeHardwareRebootTriggered,
+				expectedRebootType:    infrav1.RebootTypeHardware,
+			}),
+			Entry("power-type host, wrong boot, escalates to hw not power", testCaseHandleIncompleteBootDifferentResetTypes{
+				isTimeOut:           false,
+				isConnectionRefused: false,
+				rebootTypes: []infrav1.RebootType{
+					infrav1.RebootTypePower,
+					infrav1.RebootTypePowerLong,
+					infrav1.RebootTypeHardware,
+					infrav1.RebootTypeManual,
+				},
+				hostErrorType:         infrav1.ErrorTypeSSHRebootTriggered,
+				expectedHostErrorType: infrav1.ErrorTypeHardwareRebootTriggered,
+				expectedRebootType:    infrav1.RebootTypeHardware,
+			}),
 		)
 
 		type testCaseHandleIncompleteBootDifferentTimeouts struct {
@@ -453,7 +481,8 @@ var _ = Describe("handleIncompleteBoot", func() {
 				hostErrorType:         infrav1.ErrorTypeSoftwareRebootTriggered,
 				lastUpdated:           time.Now().Add(-15 * time.Minute),
 				expectedHostErrorType: infrav1.ErrorTypeHardwareRebootTriggered,
-				expectedRebootType:    infrav1.RebootTypePower,
+				// sw escalates to hw, never to power/power_long (those are shutdowns).
+				expectedRebootType: infrav1.RebootTypeHardware,
 			}),
 			Entry("not timed out hw reset", testCaseHandleIncompleteBootDifferentTimeouts{
 				hostErrorType:         infrav1.ErrorTypeHardwareRebootTriggered,
