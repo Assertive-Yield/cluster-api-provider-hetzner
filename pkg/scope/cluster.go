@@ -34,18 +34,20 @@ import (
 
 	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
 	secretutil "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/secrets"
+	sshclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
 	hcloudclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client"
 )
 
 // ClusterScopeParams defines the input parameters used to create a new scope.
 type ClusterScopeParams struct {
-	Client         client.Client
-	APIReader      client.Reader
-	Logger         logr.Logger
-	HetznerSecret  *corev1.Secret
-	HCloudClient   hcloudclient.Client
-	Cluster        *clusterv1.Cluster
-	HetznerCluster *infrav1.HetznerCluster
+	Client           client.Client
+	APIReader        client.Reader
+	Logger           logr.Logger
+	HetznerSecret    *corev1.Secret
+	HCloudClient     hcloudclient.Client
+	SSHClientFactory sshclient.Factory
+	Cluster          *clusterv1.Cluster
+	HetznerCluster   *infrav1.HetznerCluster
 }
 
 // NewClusterScope creates a new Scope from the supplied parameters.
@@ -75,14 +77,15 @@ func NewClusterScope(params ClusterScopeParams) (*ClusterScope, error) {
 	}
 
 	return &ClusterScope{
-		Logger:         params.Logger,
-		Client:         params.Client,
-		APIReader:      params.APIReader,
-		Cluster:        params.Cluster,
-		HetznerCluster: params.HetznerCluster,
-		HCloudClient:   params.HCloudClient,
-		patchHelper:    helper,
-		hetznerSecret:  params.HetznerSecret,
+		Logger:           params.Logger,
+		Client:           params.Client,
+		APIReader:        params.APIReader,
+		Cluster:          params.Cluster,
+		HetznerCluster:   params.HetznerCluster,
+		HCloudClient:     params.HCloudClient,
+		SSHClientFactory: params.SSHClientFactory,
+		patchHelper:      helper,
+		hetznerSecret:    params.HetznerSecret,
 	}, nil
 }
 
@@ -94,7 +97,8 @@ type ClusterScope struct {
 	patchHelper   *patch.Helper
 	hetznerSecret *corev1.Secret
 
-	HCloudClient hcloudclient.Client
+	HCloudClient     hcloudclient.Client
+	SSHClientFactory sshclient.Factory
 
 	Cluster        *clusterv1.Cluster
 	HetznerCluster *infrav1.HetznerCluster

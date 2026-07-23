@@ -17,9 +17,12 @@ limitations under the License.
 package v1beta1
 
 import (
+	"net/url"
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
+
+	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/utils"
 )
 
 func validateHCloudMachineSpec(oldSpec, newSpec HCloudMachineSpec) field.ErrorList {
@@ -38,6 +41,20 @@ func validateHCloudMachineSpec(oldSpec, newSpec HCloudMachineSpec) field.ErrorLi
 		)
 	}
 
+	// ImageURL is immutable
+	if !reflect.DeepEqual(oldSpec.ImageURL, newSpec.ImageURL) {
+		allErrs = append(allErrs,
+			field.Invalid(field.NewPath("spec", "imageURL"), newSpec.ImageURL, "field is immutable"),
+		)
+	}
+
+	// ImageURLCommand is immutable
+	if !reflect.DeepEqual(oldSpec.ImageURLCommand, newSpec.ImageURLCommand) {
+		allErrs = append(allErrs,
+			field.Invalid(field.NewPath("spec", "imageURLCommand"), newSpec.ImageURLCommand, "field is immutable"),
+		)
+	}
+
 	// SSHKeys is immutable
 	if !reflect.DeepEqual(oldSpec.SSHKeys, newSpec.SSHKeys) {
 		allErrs = append(allErrs,
@@ -50,6 +67,48 @@ func validateHCloudMachineSpec(oldSpec, newSpec HCloudMachineSpec) field.ErrorLi
 		allErrs = append(allErrs,
 			field.Invalid(field.NewPath("spec", "placementGroupName"), newSpec.PlacementGroupName, "field is immutable"),
 		)
+	}
+
+	allErrs = append(allErrs, validateHCloudMachineSpecCreate(newSpec)...)
+
+	return allErrs
+}
+
+func validateHCloudMachineSpecCreate(spec HCloudMachineSpec) field.ErrorList {
+	var allErrs field.ErrorList
+
+	if spec.ImageName != "" && spec.ImageURL != "" {
+		allErrs = append(allErrs,
+			field.Invalid(field.NewPath("spec", "imageName"), spec.ImageName, "imageName and imageURL are mutually exclusive"))
+	}
+
+	if spec.ImageName == "" && spec.ImageURL == "" {
+		allErrs = append(allErrs,
+			field.Invalid(field.NewPath("spec", "imageName"), spec.ImageName, "one of imageName or imageURL must be set"))
+	}
+
+	if spec.ImageURL != "" {
+		if _, err := url.ParseRequestURI(spec.ImageURL); err != nil {
+			allErrs = append(allErrs,
+				field.Invalid(field.NewPath("spec", "imageURL"), spec.ImageURL, err.Error()))
+		}
+	}
+
+	if spec.ImageURL != "" && spec.ImageURLCommand == "" {
+		allErrs = append(allErrs,
+			field.Required(field.NewPath("spec", "imageURLCommand"), "imageURLCommand must be set when imageURL is set"))
+	}
+
+	if spec.ImageURL == "" && spec.ImageURLCommand != "" {
+		allErrs = append(allErrs,
+			field.Invalid(field.NewPath("spec", "imageURLCommand"), spec.ImageURLCommand, "imageURLCommand requires imageURL to be set"))
+	}
+
+	if spec.ImageURLCommand != "" {
+		if err := utils.ValidateImageURLCommandName(spec.ImageURLCommand); err != nil {
+			allErrs = append(allErrs,
+				field.Invalid(field.NewPath("spec", "imageURLCommand"), spec.ImageURLCommand, err.Error()))
+		}
 	}
 
 	return allErrs

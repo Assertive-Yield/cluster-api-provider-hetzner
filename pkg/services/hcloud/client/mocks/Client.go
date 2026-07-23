@@ -779,3 +779,61 @@ func NewClient(t interface {
 
 	return mock
 }
+
+// EnableRescueSystem provides a mock function with given fields: _a0, _a1, _a2
+func (_m *Client) EnableRescueSystem(_a0 context.Context, _a1 *hcloud.Server, _a2 *hcloud.ServerEnableRescueOpts) (hcloud.ServerEnableRescueResult, error) {
+	ret := _m.Called(_a0, _a1, _a2)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EnableRescueSystem")
+	}
+
+	var r0 hcloud.ServerEnableRescueResult
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *hcloud.Server, *hcloud.ServerEnableRescueOpts) (hcloud.ServerEnableRescueResult, error)); ok {
+		return rf(_a0, _a1, _a2)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *hcloud.Server, *hcloud.ServerEnableRescueOpts) hcloud.ServerEnableRescueResult); ok {
+		r0 = rf(_a0, _a1, _a2)
+	} else {
+		r0 = ret.Get(0).(hcloud.ServerEnableRescueResult)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *hcloud.Server, *hcloud.ServerEnableRescueOpts) error); ok {
+		r1 = rf(_a0, _a1, _a2)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetAction provides a mock function with given fields: _a0, _a1
+func (_m *Client) GetAction(_a0 context.Context, _a1 int64) (*hcloud.Action, error) {
+	ret := _m.Called(_a0, _a1)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAction")
+	}
+
+	var r0 *hcloud.Action
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*hcloud.Action, error)); ok {
+		return rf(_a0, _a1)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *hcloud.Action); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*hcloud.Action)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

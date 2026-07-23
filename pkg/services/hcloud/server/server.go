@@ -62,6 +62,11 @@ func NewService(scope *scope.MachineScope) *Service {
 
 // Reconcile implements reconcilement of HCloudMachines.
 func (s *Service) Reconcile(ctx context.Context) (res reconcile.Result, err error) {
+	// imageURL path: rescue + image-url-command state machine (mutually exclusive with imageName).
+	if s.scope.HCloudMachine.Spec.ImageURL != "" {
+		return s.reconcileImageURL(ctx)
+	}
+
 	// detect failure domain
 	failureDomain, err := s.scope.GetFailureDomain()
 	if err != nil {

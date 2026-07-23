@@ -1409,3 +1409,73 @@ func NewClient(t interface {
 
 	return mock
 }
+
+// StartImageURLCommand provides a mock function with given fields: ctx, command, imageURL, bootstrapData, machineName, deviceNames
+func (_m *Client) StartImageURLCommand(ctx context.Context, command string, imageURL string, bootstrapData []byte, machineName string, deviceNames []string) (int, string, error) {
+	ret := _m.Called(ctx, command, imageURL, bootstrapData, machineName, deviceNames)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StartImageURLCommand")
+	}
+
+	var r0 int
+	var r1 string
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, []byte, string, []string) (int, string, error)); ok {
+		return rf(ctx, command, imageURL, bootstrapData, machineName, deviceNames)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, []byte, string, []string) int); ok {
+		r0 = rf(ctx, command, imageURL, bootstrapData, machineName, deviceNames)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, []byte, string, []string) string); ok {
+		r1 = rf(ctx, command, imageURL, bootstrapData, machineName, deviceNames)
+	} else {
+		r1 = ret.Get(1).(string)
+	}
+
+	if rf, ok := ret.Get(2).(func(context.Context, string, string, []byte, string, []string) error); ok {
+		r2 = rf(ctx, command, imageURL, bootstrapData, machineName, deviceNames)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// StateOfImageURLCommand provides a mock function with given fields: ctx
+func (_m *Client) StateOfImageURLCommand(ctx context.Context) (sshclient.ImageURLCommandState, string, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StateOfImageURLCommand")
+	}
+
+	var r0 sshclient.ImageURLCommandState
+	var r1 string
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context) (sshclient.ImageURLCommandState, string, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) sshclient.ImageURLCommandState); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(sshclient.ImageURLCommandState)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) string); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Get(1).(string)
+	}
+
+	if rf, ok := ret.Get(2).(func(context.Context) error); ok {
+		r2 = rf(ctx)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}

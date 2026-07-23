@@ -52,8 +52,24 @@ type HCloudMachineSpec struct {
 
 	// ImageName is the reference to the Machine Image from which to create the machine instance.
 	// It can reference an image uploaded to Hetzner API in two ways: either directly as the name of an image or as the label of an image.
+	// ImageName is mutually exclusive with ImageURL.
 	// +kubebuilder:validation:MinLength=1
-	ImageName string `json:"imageName"`
+	// +optional
+	ImageName string `json:"imageName,omitempty"`
+
+	// ImageURL installs a custom node image. When set, the controller boots the server into
+	// rescue mode, copies ImageURLCommand into the rescue system, and executes it.
+	// The process succeeds when the command's last output line contains IMAGE_URL_DONE.
+	// ImageURL is mutually exclusive with ImageName. ImageURLCommand is required when set.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	ImageURL string `json:"imageURL,omitempty"`
+
+	// ImageURLCommand is the basename of a command file under /shared on the controller pod
+	// that provisions the machine from ImageURL. Must be set iff ImageURL is set.
+	// Name must match: image-url-command-[a-z0-9][a-z0-9._-]*
+	// +optional
+	ImageURLCommand string `json:"imageURLCommand,omitempty"`
 
 	// SSHKeys define machine-specific SSH keys and override cluster-wide SSH keys.
 	// +optional
@@ -103,6 +119,36 @@ type HCloudMachineStatus struct {
 	// Conditions define the current service state of the HCloudMachine.
 	// +optional
 	Conditions clusterv1.Conditions `json:"conditions,omitempty"`
+
+	// BootState tracks imageName vs imageURL provisioning progress.
+	// imageName: BootingToRealOS → OperatingSystemRunning
+	// imageURL: Initializing → EnablingRescue → BootingToRescue → RunningImageCommand → BootingToRealOS → OperatingSystemRunning
+	// +optional
+	BootState HCloudBootState `json:"bootState,omitempty"`
+
+	// BootStateSince is the timestamp of the last BootState change (used for timeouts).
+	// +optional
+	BootStateSince metav1.Time `json:"bootStateSince,omitempty"`
+
+	// ExternalIDs holds temporary HCloud action IDs during imageURL provisioning.
+	// +optional
+	ExternalIDs HCloudMachineStatusExternalIDs `json:"externalIDs,omitempty"`
+}
+
+// HCloudMachineStatusExternalIDs holds temporary data during imageURL provisioning.
+type HCloudMachineStatusExternalIDs struct {
+	// ActionIDEnableRescueSystem is the HCloud API action id for EnableRescue.
+	// +optional
+	ActionIDEnableRescueSystem int64 `json:"actionIdEnableRescueSystem,omitempty"`
+}
+
+// SetBootState sets Status.BootState and updates Status.BootStateSince when the state changes.
+func (r *HCloudMachine) SetBootState(bootState HCloudBootState) {
+	if r.Status.BootState == bootState {
+		return
+	}
+	r.Status.BootState = bootState
+	r.Status.BootStateSince = metav1.Now()
 }
 
 // HCloudMachine is the Schema for the hcloudmachines API.

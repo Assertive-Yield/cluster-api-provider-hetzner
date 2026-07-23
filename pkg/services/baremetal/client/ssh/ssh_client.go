@@ -177,7 +177,28 @@ type Client interface {
 	// ExecutePreProvisionCommand executes a command before the provision process starts.
 	// A non-zero exit status will indicate that provisioning should not start.
 	ExecutePreProvisionCommand(ctx context.Context, preProvisionCommand string) (exitStatus int, stdoutAndStderr string, err error)
+
+	// StartImageURLCommand copies and starts the image-url-command in rescue (HCloud imageURL path).
+	StartImageURLCommand(ctx context.Context, command, imageURL string, bootstrapData []byte, machineName string, deviceNames []string) (exitStatus int, stdoutAndStderr string, err error)
+	// StateOfImageURLCommand returns the current state of a started image-url-command.
+	StateOfImageURLCommand(ctx context.Context) (state ImageURLCommandState, logFile string, err error)
 }
+
+// ImageURLCommandState is the state of the image-url-command process on a rescue system.
+type ImageURLCommandState string
+
+const (
+	// ImageURLCommandStateNotStarted indicates the command has not been started yet.
+	ImageURLCommandStateNotStarted ImageURLCommandState = "ImageURLCommandStateNotStarted"
+	// ImageURLCommandStateRunning indicates the command is still running.
+	ImageURLCommandStateRunning ImageURLCommandState = "ImageURLCommandStateRunning"
+	// ImageURLCommandStateFinishedSuccessfully indicates success (IMAGE_URL_DONE in log).
+	ImageURLCommandStateFinishedSuccessfully ImageURLCommandState = "ImageURLCommandStateFinishedSuccessfully"
+	// ImageURLCommandStateFailed indicates the command finished without IMAGE_URL_DONE.
+	ImageURLCommandStateFailed ImageURLCommandState = "ImageURLCommandStateFailed"
+)
+
+const imageURLCommandLog = "/root/image-url-command.log"
 
 // Factory is the interface for creating new Client objects.
 type Factory interface {
@@ -727,4 +748,122 @@ func (c *sshClient) ExecutePreProvisionCommand(ctx context.Context, command stri
 	s = strings.TrimSpace(s)
 
 	return exitStatus, s, nil
+}
+
+func (c *sshClient) StartImageURLCommand(ctx context.Context, command, imageURL string, bootstrapData []byte, machineName string, deviceNames []string) (int, string, error) {
+	logger := ctrl.LoggerFrom(ctx).WithName("ssh-client")
+
+	for _, dn := range deviceNames {
+		if strings.Contains(dn, "/") {
+			return 0, "", fmt.Errorf("deviceName must not contain a slash (example: only sda not /dev/sda): %q", dn)
+		}
+		if strings.Contains(dn, " ") {
+			return 0, "", fmt.Errorf("deviceName must not contain spaces: %q", dn)
+		}
+		if dn == "" {
+			return 0, "", errors.New("deviceName must not be empty")
+		}
+	}
+
+	if command == "" {
+		return 0, "", fmt.Errorf("image-url-command is empty")
+	}
+
+	fdCommand, err := os.Open(command) //nolint:gosec // path validated by ResolveImageURLCommandPath
+	if err != nil {
+		return 0, "", fmt.Errorf("error opening image-url-command %q: %w", command, err)
+	}
+	defer func() {
+		if err := fdCommand.Close(); err != nil {
+			logger.Error(err, "failed to close image-url-command file", "path", command)
+		}
+	}()
+
+	client, err := c.getSSHClient()
+	if err != nil {
+		return 0, "", err
+	}
+	defer func() {
+		if err := client.Close(); err != nil {
+			logger.Error(err, "failed to close ssh client")
+		}
+	}()
+
+	scpClient, err := scp.NewClientBySSH(client)
+	if err != nil {
+		return 0, "", fmt.Errorf("couldn't create a new scp client: %w", err)
+	}
+	defer scpClient.Close()
+
+	dest := "/root/image-url-command"
+	if err := scpClient.CopyFromFile(ctx, *fdCommand, dest, "0700"); err != nil {
+		return 0, "", fmt.Errorf("error copying file %q to %s:%d:%s %w", command, c.ip, c.port, dest, err)
+	}
+
+	reader := bytes.NewReader(bootstrapData)
+	if err := scpClient.CopyFile(ctx, reader, "/root/bootstrap.data", "0700"); err != nil {
+		return 0, "", fmt.Errorf("error copying bootstrap data to %s:%d:/root/bootstrap.data %w", c.ip, c.port, err)
+	}
+
+	cmd := fmt.Sprintf(`#!/usr/bin/bash
+OCI_REGISTRY_AUTH_TOKEN='%s' nohup /root/image-url-command '%s' /root/bootstrap.data '%s' '%s' >%s 2>&1 </dev/null &
+echo $! > /root/image-url-command.pid
+`, os.Getenv("OCI_REGISTRY_AUTH_TOKEN"), imageURL, machineName, strings.Join(deviceNames, " "),
+		imageURLCommandLog)
+
+	out := c.runSSH(cmd)
+	exitStatus, err := out.ExitStatus()
+	if err != nil {
+		return 0, "", fmt.Errorf("error starting image-url-command on %s:%d: %w", c.ip, c.port, err)
+	}
+
+	s := strings.TrimSpace(out.StdOut + "\n" + out.StdErr)
+	return exitStatus, s, nil
+}
+
+func (c *sshClient) StateOfImageURLCommand(ctx context.Context) (state ImageURLCommandState, stdoutStderr string, err error) {
+	_ = ctx
+	out := c.runSSH(`[ -e /root/image-url-command.pid ]`)
+	exitStatus, err := out.ExitStatus()
+	if err != nil {
+		return ImageURLCommandStateNotStarted, "", fmt.Errorf("getting exit status of image-url-command failed: %w", err)
+	}
+	if exitStatus > 0 {
+		return ImageURLCommandStateNotStarted, "", nil
+	}
+
+	out = c.runSSH(`ps -p "$(cat /root/image-url-command.pid)" -o args= | grep -q image-url-command`)
+	exitStatus, err = out.ExitStatus()
+	if err != nil {
+		return ImageURLCommandStateNotStarted, "", fmt.Errorf("detecting if image-url-command is still running failed: %w", err)
+	}
+
+	logFile, err := c.getImageURLCommandOutput()
+	if err != nil {
+		return ImageURLCommandStateFailed, logFile, err
+	}
+
+	if exitStatus == 0 {
+		return ImageURLCommandStateRunning, logFile, nil
+	}
+
+	out = c.runSSH(fmt.Sprintf("tail -n 1 %s | grep -q IMAGE_URL_DONE", imageURLCommandLog))
+	exitStatus, err = out.ExitStatus()
+	if err != nil {
+		return ImageURLCommandStateNotStarted, logFile, fmt.Errorf("detecting if image-url-command was successful failed: %w", err)
+	}
+
+	if exitStatus > 0 {
+		return ImageURLCommandStateFailed,
+			fmt.Sprintf("IMAGE_URL_DONE not found in %s:\n%s", imageURLCommandLog, logFile), nil
+	}
+	return ImageURLCommandStateFinishedSuccessfully, logFile, nil
+}
+
+func (c *sshClient) getImageURLCommandOutput() (string, error) {
+	out := c.runSSH(fmt.Sprintf("cat %s 2>/dev/null || true", imageURLCommandLog))
+	if out.Err != nil {
+		return "", out.Err
+	}
+	return out.StdOut + out.StdErr, nil
 }

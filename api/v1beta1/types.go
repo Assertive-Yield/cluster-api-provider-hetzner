@@ -79,6 +79,28 @@ type SSHKey struct {
 // HCloudMachineType defines the HCloud Machine type.
 type HCloudMachineType string
 
+// HCloudBootState defines the boot/provisioning state of an HCloud server.
+type HCloudBootState string
+
+const (
+	// HCloudBootStateUnset is the initial state before boot tracking starts.
+	HCloudBootStateUnset HCloudBootState = ""
+	// HCloudBootStateInitializing waits for the pre-rescue OS (imageURL path).
+	HCloudBootStateInitializing HCloudBootState = "Initializing"
+	// HCloudBootStateEnablingRescue waits for EnableRescue to finish (imageURL path).
+	HCloudBootStateEnablingRescue HCloudBootState = "EnablingRescue"
+	// HCloudBootStateBootingToRescue waits until rescue SSH is reachable (imageURL path).
+	HCloudBootStateBootingToRescue HCloudBootState = "BootingToRescue"
+	// HCloudBootStateRunningImageCommand runs ImageURLCommand in rescue (imageURL path).
+	HCloudBootStateRunningImageCommand HCloudBootState = "RunningImageCommand"
+	// HCloudBootStateBootingToRealOS waits for the real OS after snapshot or imageURL install.
+	HCloudBootStateBootingToRealOS HCloudBootState = "BootingToRealOS"
+	// HCloudBootStateOperatingSystemRunning indicates the OS is up and the machine can become Ready.
+	HCloudBootStateOperatingSystemRunning HCloudBootState = "OperatingSystemRunning"
+	// HCloudBootStateProvisioningFailed indicates provisioning failed; machine should be deleted/remediated.
+	HCloudBootStateProvisioningFailed HCloudBootState = "ProvisioningFailed"
+)
+
 // ResourceLifecycle configures the lifecycle of a resource.
 type ResourceLifecycle string
 

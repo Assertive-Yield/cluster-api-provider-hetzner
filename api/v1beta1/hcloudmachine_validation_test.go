@@ -38,10 +38,12 @@ func TestValidateHCloudMachineSpec(t *testing.T) {
 			name: "Immutable Type",
 			args: args{
 				oldSpec: HCloudMachineSpec{
-					Type: "cpx11",
+					Type:      "cpx11",
+					ImageName: "ubuntu-24.04",
 				},
 				newSpec: HCloudMachineSpec{
-					Type: "cx21",
+					Type:      "cx21",
+					ImageName: "ubuntu-24.04",
 				},
 			},
 			want: field.Invalid(field.NewPath("spec", "type"), "cx21", "field is immutable"),
@@ -62,6 +64,7 @@ func TestValidateHCloudMachineSpec(t *testing.T) {
 			name: "Immutable SSHKeys",
 			args: args{
 				oldSpec: HCloudMachineSpec{
+					ImageName: "ubuntu-24.04",
 					SSHKeys: []SSHKey{
 						{
 							Name:        "ssh-key-1",
@@ -70,6 +73,7 @@ func TestValidateHCloudMachineSpec(t *testing.T) {
 					},
 				},
 				newSpec: HCloudMachineSpec{
+					ImageName: "ubuntu-24.04",
 					SSHKeys: []SSHKey{
 						{
 							Name:        "ssh-key-1",
@@ -97,9 +101,11 @@ func TestValidateHCloudMachineSpec(t *testing.T) {
 			name: "Immutable PlacementGroupName",
 			args: args{
 				oldSpec: HCloudMachineSpec{
+					ImageName:          "ubuntu-24.04",
 					PlacementGroupName: createPlacementGroupName("placement-group-1"),
 				},
 				newSpec: HCloudMachineSpec{
+					ImageName:          "ubuntu-24.04",
 					PlacementGroupName: createPlacementGroupName("placement-group-2"),
 				},
 			},
@@ -141,6 +147,75 @@ func TestValidateHCloudMachineSpec(t *testing.T) {
 				assert.Equal(t, tt.want.Type, got[0].Type)
 				assert.Equal(t, tt.want.Field, got[0].Field)
 				assert.Equal(t, tt.want.Detail, got[0].Detail)
+			}
+		})
+	}
+}
+
+func TestValidateHCloudMachineSpecCreate_ImageURL(t *testing.T) {
+	tests := []struct {
+		name    string
+		spec    HCloudMachineSpec
+		wantErr bool
+		field   string
+	}{
+		{
+			name:    "imageName only ok",
+			spec:    HCloudMachineSpec{ImageName: "ubuntu-24.04"},
+			wantErr: false,
+		},
+		{
+			name: "imageURL + command ok",
+			spec: HCloudMachineSpec{
+				ImageURL:        "https://factory.talos.dev/image/example/v1.13.7/hcloud-amd64.raw.xz",
+				ImageURLCommand: "image-url-command-talos",
+			},
+			wantErr: false,
+		},
+		{
+			name:    "both empty",
+			spec:    HCloudMachineSpec{},
+			wantErr: true,
+			field:   "spec.imageName",
+		},
+		{
+			name: "mutual exclusive",
+			spec: HCloudMachineSpec{
+				ImageName:       "ubuntu-24.04",
+				ImageURL:        "https://example.com/img.raw",
+				ImageURLCommand: "image-url-command-x",
+			},
+			wantErr: true,
+			field:   "spec.imageName",
+		},
+		{
+			name: "imageURL without command",
+			spec: HCloudMachineSpec{
+				ImageURL: "https://example.com/img.raw",
+			},
+			wantErr: true,
+			field:   "spec.imageURLCommand",
+		},
+		{
+			name: "bad command name",
+			spec: HCloudMachineSpec{
+				ImageURL:        "https://example.com/img.raw",
+				ImageURLCommand: "not-a-valid-name",
+			},
+			wantErr: true,
+			field:   "spec.imageURLCommand",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := validateHCloudMachineSpecCreate(tt.spec)
+			if tt.wantErr {
+				assert.NotEmpty(t, got)
+				if len(got) > 0 {
+					assert.Equal(t, tt.field, got[0].Field)
+				}
+			} else {
+				assert.Empty(t, got)
 			}
 		})
 	}

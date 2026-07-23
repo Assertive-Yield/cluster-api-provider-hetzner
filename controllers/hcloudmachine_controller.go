@@ -46,6 +46,7 @@ import (
 	infrav1 "github.com/Assertive-Yield/cluster-api-provider-hetzner/api/v1beta1"
 	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/scope"
 	secretutil "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/secrets"
+	sshclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/baremetal/client/ssh"
 	hcloudclient "github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/client"
 	"github.com/Assertive-Yield/cluster-api-provider-hetzner/pkg/services/hcloud/server"
 )
@@ -56,6 +57,7 @@ type HCloudMachineReconciler struct {
 	RateLimitWaitTime   time.Duration
 	APIReader           client.Reader
 	HCloudClientFactory hcloudclient.Factory
+	SSHClientFactory    sshclient.Factory
 	WatchFilterValue    string
 }
 
@@ -128,15 +130,21 @@ func (r *HCloudMachineReconciler) Reconcile(ctx context.Context, req reconcile.R
 
 	hcc := r.HCloudClientFactory.NewClient(hcloudToken)
 
+	sshFactory := r.SSHClientFactory
+	if sshFactory == nil {
+		sshFactory = sshclient.NewFactory()
+	}
+
 	machineScope, err := scope.NewMachineScope(scope.MachineScopeParams{
 		ClusterScopeParams: scope.ClusterScopeParams{
-			Client:         r.Client,
-			Logger:         log,
-			Cluster:        cluster,
-			HetznerCluster: hetznerCluster,
-			HCloudClient:   hcc,
-			HetznerSecret:  hetznerSecret,
-			APIReader:      r.APIReader,
+			Client:           r.Client,
+			Logger:           log,
+			Cluster:          cluster,
+			HetznerCluster:   hetznerCluster,
+			HCloudClient:     hcc,
+			SSHClientFactory: sshFactory,
+			HetznerSecret:    hetznerSecret,
+			APIReader:        r.APIReader,
 		},
 		Machine:       machine,
 		HCloudMachine: hcloudMachine,

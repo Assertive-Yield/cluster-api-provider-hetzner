@@ -192,6 +192,7 @@ func main() {
 		APIReader:           mgr.GetAPIReader(),
 		RateLimitWaitTime:   rateLimitWaitTime,
 		HCloudClientFactory: hcloudClientFactory,
+		SSHClientFactory:    sshclient.NewFactory(),
 		WatchFilterValue:    watchFilterValue,
 	}).SetupWithManager(ctx, mgr, controller.Options{MaxConcurrentReconciles: hcloudMachineConcurrency}); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "HCloudMachine")

@@ -76,6 +76,27 @@ const (
 )
 
 const (
+	// ServerProvisionedCondition reports whether HCloud image/imageURL provisioning finished.
+	ServerProvisionedCondition clusterv1.ConditionType = "ServerProvisioned"
+	// SSHPrivateKeyAvailableCondition indicates rescue SSH private key is available (imageURL path).
+	SSHPrivateKeyAvailableCondition clusterv1.ConditionType = "SSHPrivateKeyAvailable"
+	// SSHPrivateKeySecretRefNotConfiguredReason indicates RobotRescueSecretRef is empty.
+	SSHPrivateKeySecretRefNotConfiguredReason = "SSHPrivateKeySecretRefNotConfigured" //nolint:gosec
+	// SSHPrivateKeySecretNotFoundReason indicates the rescue SSH secret does not exist.
+	SSHPrivateKeySecretNotFoundReason = "SSHPrivateKeySecretNotFound" //nolint:gosec
+	// SSHPrivateKeyFieldEmptyReason indicates the private key field is missing/empty.
+	SSHPrivateKeyFieldEmptyReason = "SSHPrivateKeyFieldEmpty"
+	// ImageURLCommandNotAccessibleReason indicates the image-url-command file is missing on the controller.
+	ImageURLCommandNotAccessibleReason = "ImageURLCommandNotAccessible"
+	// ImageURLCommandFailedReason indicates ImageURLCommand failed.
+	ImageURLCommandFailedReason = "ImageURLCommandFailed"
+	// ImageURLCommandRunningReason indicates ImageURLCommand is still running.
+	ImageURLCommandRunningReason = "ImageURLCommandRunning"
+	// BootStateTimedOutReason indicates a boot state timed out.
+	BootStateTimedOutReason = "BootStateTimedOut"
+)
+
+const (
 	// NetworkReadyCondition reports on whether the network is ready.
 	NetworkReadyCondition clusterv1.ConditionType = "NetworkReady"
 	// NetworkReconcileFailedReason indicates that reconciling the network failed.

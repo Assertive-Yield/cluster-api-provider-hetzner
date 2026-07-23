@@ -802,6 +802,24 @@ func (c *cacheHCloudClient) AddServerToPlacementGroup(_ context.Context, server 
 	return nil
 }
 
+func (c *cacheHCloudClient) EnableRescueSystem(_ context.Context, server *hcloud.Server, _ *hcloud.ServerEnableRescueOpts) (hcloud.ServerEnableRescueResult, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	s, found := c.serverCache.idMap[server.ID]
+	if !found {
+		return hcloud.ServerEnableRescueResult{}, hcloud.Error{Code: hcloud.ErrorCodeNotFound, Message: "not found"}
+	}
+	s.RescueEnabled = true
+	return hcloud.ServerEnableRescueResult{
+		Action: &hcloud.Action{ID: 1, Status: hcloud.ActionStatusSuccess},
+		RootPassword: "rescue-password",
+	}, nil
+}
+
+func (c *cacheHCloudClient) GetAction(_ context.Context, actionID int64) (*hcloud.Action, error) {
+	return &hcloud.Action{ID: actionID, Status: hcloud.ActionStatusSuccess}, nil
+}
+
 func isIntInList(list []int64, str int64) bool {
 	for _, s := range list {
 		if s == str {

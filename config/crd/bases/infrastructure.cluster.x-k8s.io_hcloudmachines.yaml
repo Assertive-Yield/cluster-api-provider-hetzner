@@ -70,7 +70,22 @@ spec:
                 description: |-
                   ImageName is the reference to the Machine Image from which to create the machine instance.
                   It can reference an image uploaded to Hetzner API in two ways: either directly as the name of an image or as the label of an image.
+                  ImageName is mutually exclusive with ImageURL.
                 minLength: 1
+                type: string
+              imageURL:
+                description: |-
+                  ImageURL installs a custom node image. When set, the controller boots the server into
+                  rescue mode, copies ImageURLCommand into the rescue system, and executes it.
+                  The process succeeds when the command's last output line contains IMAGE_URL_DONE.
+                  ImageURL is mutually exclusive with ImageName. ImageURLCommand is required when set.
+                minLength: 1
+                type: string
+              imageURLCommand:
+                description: |-
+                  ImageURLCommand is the basename of a command file under /shared on the controller pod
+                  that provisions the machine from ImageURL. Must be set iff ImageURL is set.
+                  Name must match: image-url-command-[a-z0-9][a-z0-9._-]*
                 type: string
               placementGroupName:
                 description: PlacementGroupName defines the placement group of the
@@ -132,7 +147,6 @@ spec:
                   locations.
                 type: string
             required:
-            - imageName
             - type
             type: object
           status:
@@ -164,6 +178,17 @@ spec:
                   - type
                   type: object
                 type: array
+              bootState:
+                description: |-
+                  BootState tracks imageName vs imageURL provisioning progress.
+                  imageName: BootingToRealOS → OperatingSystemRunning
+                  imageURL: Initializing → EnablingRescue → BootingToRescue → RunningImageCommand → BootingToRealOS → OperatingSystemRunning
+                type: string
+              bootStateSince:
+                description: BootStateSince is the timestamp of the last BootState
+                  change (used for timeouts).
+                format: date-time
+                type: string
               conditions:
                 description: Conditions define the current service state of the HCloudMachine.
                 items:
@@ -216,6 +241,16 @@ spec:
                   - type
                   type: object
                 type: array
+              externalIDs:
+                description: ExternalIDs holds temporary HCloud action IDs during
+                  imageURL provisioning.
+                properties:
+                  actionIdEnableRescueSystem:
+                    description: ActionIDEnableRescueSystem is the HCloud API action
+                      id for EnableRescue.
+                    format: int64
+                    type: integer
+                type: object
               failureMessage:
                 description: |-
                   FailureMessage will be set in the event that there is a terminal problem
