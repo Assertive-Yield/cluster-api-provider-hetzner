@@ -27,6 +27,8 @@ FROM --platform=${BUILDPLATFORM} gcr.io/distroless/static:nonroot
 WORKDIR /
 COPY data/hetzner-installimage-v1.0.0.tgz /installimage.tgz
 COPY --from=build /src/cluster-api-provider-hetzner/manager .
+# Talos HCloud imageURL installer — CAPH resolves imageURLCommand under /shared.
+COPY --from=build --chmod=0755 /src/cluster-api-provider-hetzner/hack/image-url-command-talos-hcloud /shared/image-url-command-talos-hcloud
 # Use uid of nonroot user (65532) because kubernetes expects numeric user when applying pod security policies
 USER 65532
 ENTRYPOINT ["/manager"]
