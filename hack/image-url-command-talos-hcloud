@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# image-url-command-talos-hcloud
+#
+# CAPH HCloud imageURLCommand for Talos disk images from factory.talos.dev.
+# Copied by CAPH into the HCloud rescue system and executed as:
+#   image-url-command <imageURL> <bootstrap.data> <machineName> <deviceNames>
+#
+# Installs the factory raw(.xz) image onto the first disk. Machine config is
+# expected as HCloud user-data (set at server create by CAPH); Talos hcloud
+# platform loads it from metadata after reboot.
+#
+# Must print IMAGE_URL_DONE on the last line of stdout on success.
+set -euo pipefail
+
+IMAGE_URL="${1:?image URL required}"
+# BOOTSTRAP_FILE="${2:-}"  # available if offline config write is needed later
+# MACHINE_NAME="${3:-}"
+DEVICES="${4:?device names required}"
+
+DISK_NAME="$(echo "${DEVICES}" | awk '{print $1}')"
+DISK="/dev/${DISK_NAME}"
+
+if [[ ! -b "${DISK}" ]]; then
+  echo "disk ${DISK} not found" >&2
+  lsblk >&2 || true
+  exit 1
+fi
+
+echo "Installing Talos image from ${IMAGE_URL} onto ${DISK}"
+TMP="$(mktemp -d)"
+trap 'rm -rf "${TMP}"' EXIT
+
+# factory.talos.dev serves .raw.xz for hcloud-* artifacts
+ARCHIVE="${TMP}/image"
+curl -fL --retry 5 --retry-delay 2 -o "${ARCHIVE}" "${IMAGE_URL}"
+
+case "${IMAGE_URL}" in
+  *.xz|*.raw.xz)
+    xz -d -c "${ARCHIVE}" | dd of="${DISK}" bs=4M status=progress conv=fsync
+    ;;
+  *.gz|*.raw.gz)
+    gzip -d -c "${ARCHIVE}" | dd of="${DISK}" bs=4M status=progress conv=fsync
+    ;;
+  *)
+    # assume raw
+    dd if="${ARCHIVE}" of="${DISK}" bs=4M status=progress conv=fsync
+    ;;
+esac
+
+sync
+echo "Install complete on ${DISK}"
+echo "IMAGE_URL_DONE"

@@ -424,8 +424,15 @@ func (s *Service) createServerFromImageURL(ctx context.Context) (*hcloud.Server,
 		return nil, fmt.Errorf("failed to get pre-rescue OS image %q: %w", preRescueOSImage, err)
 	}
 
-	// Create without cloud-init user-data; imageURLCommand writes the real OS + bootstrap.
-	server, err := s.createServerWithImageAndUserData(ctx, image, nil)
+	// Still attach bootstrap as HCloud user-data. The temporary pre-rescue OS ignores it;
+	// after imageURLCommand writes the real OS (e.g. Talos) and we reboot, the platform
+	// re-reads the same user-data from the HCloud metadata service (required for Talos).
+	userData, err := s.scope.GetRawBootstrapData(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get raw bootstrap data for imageURL create: %w", err)
+	}
+
+	server, err := s.createServerWithImageAndUserData(ctx, image, userData)
 	if err != nil {
 		return nil, err
 	}
