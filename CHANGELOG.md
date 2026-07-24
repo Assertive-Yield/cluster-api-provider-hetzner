@@ -14,3 +14,5 @@ This project is forked from [syself/cluster-api-provider-hetzner](https://github
 ### Features
 
 - **HCloud `imageURL` / `imageURLCommand`**: provision HCloud machines from a custom image URL via rescue + controller-mounted command (port of syself CAPH 1.1.x). Mutually exclusive with `imageName`. Requires `HetznerCluster.spec.sshKeys.robotRescueSecretRef` and a binary named `image-url-command-*` under `/shared` on the controller pod.
+- Ship **`/shared/image-url-command-talos-hcloud`** in the manager image (factory.talos.dev `hcloud-*.raw.xz` installer).
+- imageURL server create now attaches **bootstrap user-data** so Talos can load machine config from HCloud metadata after install.
