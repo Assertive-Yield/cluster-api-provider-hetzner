@@ -170,7 +170,16 @@ func (s *Service) handleImageURLBootStateInitializing(ctx context.Context, serve
 		return reconcile.Result{}, fmt.Errorf("network attach during imageURL init: %w", err)
 	}
 
-	rescueOpts := &hcloud.ServerEnableRescueOpts{}
+	// Must match syself/upstream: linux64 rescue + inject the same HCloud SSH keys used at create,
+	// otherwise rescue may not accept our robot/private key and reboot-into-rescue is unreliable.
+	hcloudSSHKeys, err := s.hcloudSSHKeysForServer(ctx)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+	rescueOpts := &hcloud.ServerEnableRescueOpts{
+		Type:    hcloud.ServerRescueTypeLinux64,
+		SSHKeys: hcloudSSHKeys,
+	}
 	result, err := s.scope.HCloudClient.EnableRescueSystem(ctx, server, rescueOpts)
 	if err != nil {
 		return reconcile.Result{}, handleRateLimit(hm, err, "EnableRescueSystem", "failed to enable rescue system")
@@ -184,6 +193,10 @@ func (s *Service) handleImageURLBootStateInitializing(ctx context.Context, serve
 	return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
 }
 
+// actionDoneEnableRescue is a sentinel stored in ExternalIDs after the enable-rescue API action finishes.
+// We then wait one more reconcile before rebooting (Hetzner can ignore an immediate reboot).
+const actionDoneEnableRescue int64 = -1
+
 func (s *Service) handleImageURLBootStateEnablingRescue(ctx context.Context, server *hcloud.Server) (reconcile.Result, error) {
 	hm := s.scope.HCloudMachine
 	if server == nil {
@@ -196,7 +209,11 @@ func (s *Service) handleImageURLBootStateEnablingRescue(ctx context.Context, ser
 	s.updateStatusPreserveBoot(server, failureDomainFromMachine(s))
 
 	actionID := hm.Status.ExternalIDs.ActionIDEnableRescueSystem
-	if actionID != 0 {
+	if actionID == 0 {
+		return s.failImageURLProvisioning("ActionIDEnableRescueSystem not set after EnableRescue")
+	}
+
+	if actionID != actionDoneEnableRescue {
 		action, err := s.scope.HCloudClient.GetAction(ctx, actionID)
 		if err != nil {
 			return reconcile.Result{}, handleRateLimit(hm, err, "GetAction", "failed to get enable-rescue action")
@@ -207,21 +224,47 @@ func (s *Service) handleImageURLBootStateEnablingRescue(ctx context.Context, ser
 		case hcloud.ActionStatusError:
 			return s.failImageURLProvisioning(fmt.Sprintf("enable rescue action failed: %v", action.ErrorMessage))
 		case hcloud.ActionStatusSuccess:
-			// continue
+			// Mark done and delay reboot — rebooting immediately after the action can be ignored by Hetzner.
+			hm.Status.ExternalIDs.ActionIDEnableRescueSystem = actionDoneEnableRescue
+			conditions.MarkFalse(hm, infrav1.ServerProvisionedCondition, "EnablingRescueActionDone",
+				clusterv1.ConditionSeverityInfo, "rescue enable action finished; delaying reboot")
+			return reconcile.Result{RequeueAfter: 4 * time.Second}, nil
 		default:
 			return reconcile.Result{RequeueAfter: 5 * time.Second}, nil
 		}
 	}
 
-	// Reboot into rescue (power cycle).
-	if err := s.scope.HCloudClient.RebootServer(ctx, server); err != nil {
-		// Fallback: some clients use PowerOn after shutdown; try Reboot only here.
-		return reconcile.Result{}, handleRateLimit(hm, err, "RebootServer", "failed to reboot into rescue")
+	// Refresh server so RescueEnabled is current.
+	refreshed, err := s.scope.HCloudClient.GetServer(ctx, server.ID)
+	if err != nil {
+		return reconcile.Result{}, handleRateLimit(hm, err, "GetServer", "failed to get server before rescue reboot")
+	}
+	if refreshed != nil {
+		server = refreshed
+		s.updateStatusPreserveBoot(server, failureDomainFromMachine(s))
+	}
+	if !server.RescueEnabled {
+		conditions.MarkFalse(hm, infrav1.ServerProvisionedCondition, "RescueNotEnabledYet",
+			clusterv1.ConditionSeverityWarning, "rescue flag not set yet after enable action")
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
+	}
+
+	// Reboot via SSH into the pre-rescue OS (avoids HCloud reboot races; matches upstream CAPH).
+	sshClient, err := s.getRescueSSHClient(ctx)
+	if err != nil {
+		conditions.MarkFalse(hm, infrav1.ServerProvisionedCondition, "GetSSHClientFailed",
+			clusterv1.ConditionSeverityWarning, "%s", err.Error())
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
+	}
+	if out := sshClient.Reboot(); out.Err != nil {
+		conditions.MarkFalse(hm, infrav1.ServerProvisionedCondition, "RebootViaSSHFailed",
+			clusterv1.ConditionSeverityWarning, "reboot via ssh: %s", out.Err.Error())
+		return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
 	}
 
 	hm.SetBootState(infrav1.HCloudBootStateBootingToRescue)
 	conditions.MarkFalse(hm, infrav1.ServerProvisionedCondition, "BootingToRescue",
-		clusterv1.ConditionSeverityInfo, "rebooting into rescue system")
+		clusterv1.ConditionSeverityInfo, "reboot to rescue started (ssh)")
 	return reconcile.Result{RequeueAfter: 15 * time.Second}, nil
 }
 
@@ -551,6 +594,39 @@ func (s *Service) getServerImageByName(ctx context.Context, imageName string) (*
 	hm.Spec.ImageName = imageName
 	defer func() { hm.Spec.ImageName = orig }()
 	return s.getServerImage(ctx)
+}
+
+// hcloudSSHKeysForServer resolves HCloud API SSH key objects to attach to EnableRescue
+// (same set used when creating the pre-rescue server).
+func (s *Service) hcloudSSHKeysForServer(ctx context.Context) ([]*hcloud.SSHKey, error) {
+	sshKeySpecs := s.scope.HCloudMachine.Spec.SSHKeys
+	if len(sshKeySpecs) == 0 {
+		sshKeySpecs = s.scope.HetznerCluster.Spec.SSHKeys.HCloud
+	}
+	if s.scope.HetznerSecret() != nil {
+		sshKeyName := s.scope.HetznerSecret().Data[s.scope.HetznerCluster.Spec.HetznerSecret.Key.SSHKey]
+		if len(sshKeyName) > 0 {
+			keyExists := false
+			for _, key := range sshKeySpecs {
+				if string(sshKeyName) == key.Name {
+					keyExists = true
+					break
+				}
+			}
+			if !keyExists {
+				sshKeySpecs = append(sshKeySpecs, infrav1.SSHKey{Name: string(sshKeyName)})
+			}
+		}
+	}
+	sshKeysAPI, err := s.scope.HCloudClient.ListSSHKeys(ctx, hcloud.SSHKeyListOpts{})
+	if err != nil {
+		return nil, handleRateLimit(s.scope.HCloudMachine, err, "ListSSHKeys", "failed listing ssh keys for rescue")
+	}
+	keys, err := filterHCloudSSHKeys(sshKeysAPI, sshKeySpecs)
+	if err != nil {
+		return nil, fmt.Errorf("resolve ssh keys for rescue: %w", err)
+	}
+	return keys, nil
 }
 
 func (s *Service) getRescueSSHPrivateKey(ctx context.Context) (string, error) {
