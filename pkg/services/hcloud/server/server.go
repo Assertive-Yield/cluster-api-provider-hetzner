@@ -363,8 +363,21 @@ func (s *Service) createServer(ctx context.Context) (*hcloud.Server, error) {
 
 	automount := false
 	startAfterCreate := true
+
+	// Name the hcloud server after the owning Machine: node hostnames use
+	// hostname.source=MachineName (Talos), and the hcloud cloud-controller
+	// matches nodes to servers BY NAME to set providerID. For MachineDeployment
+	// and KCP machines this equals the HCloudMachine name anyway; only
+	// CACPPT-created control plane machines are named differently. Server
+	// discovery is unaffected: it keys on labels (MachineNameTagKey), not the
+	// display name.
+	serverName := s.scope.Name()
+	if s.scope.Machine != nil && s.scope.Machine.Name != "" {
+		serverName = s.scope.Machine.Name
+	}
+
 	opts := hcloud.ServerCreateOpts{
-		Name:   s.scope.Name(),
+		Name:   serverName,
 		Labels: s.createLabels(),
 		Image:  image,
 		Location: &hcloud.Location{
