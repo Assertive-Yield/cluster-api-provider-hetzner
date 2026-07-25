@@ -489,7 +489,7 @@ func (s *Service) createServerWithImageAndUserData(ctx context.Context, image *h
 	automount := false
 	startAfterCreate := true
 	opts := hcloud.ServerCreateOpts{
-		Name:   s.scope.Name(),
+		Name:   s.serverName(),
 		Labels: s.createLabels(),
 		Image:  image,
 		Location: &hcloud.Location{

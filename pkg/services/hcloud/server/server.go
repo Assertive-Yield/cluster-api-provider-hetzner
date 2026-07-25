@@ -364,20 +364,8 @@ func (s *Service) createServer(ctx context.Context) (*hcloud.Server, error) {
 	automount := false
 	startAfterCreate := true
 
-	// Name the hcloud server after the owning Machine: node hostnames use
-	// hostname.source=MachineName (Talos), and the hcloud cloud-controller
-	// matches nodes to servers BY NAME to set providerID. For MachineDeployment
-	// and KCP machines this equals the HCloudMachine name anyway; only
-	// CACPPT-created control plane machines are named differently. Server
-	// discovery is unaffected: it keys on labels (MachineNameTagKey), not the
-	// display name.
-	serverName := s.scope.Name()
-	if s.scope.Machine != nil && s.scope.Machine.Name != "" {
-		serverName = s.scope.Machine.Name
-	}
-
 	opts := hcloud.ServerCreateOpts{
-		Name:   serverName,
+		Name:   s.serverName(),
 		Labels: s.createLabels(),
 		Image:  image,
 		Location: &hcloud.Location{
@@ -795,6 +783,21 @@ func statusFromHCloudServer(server *hcloud.Server) infrav1.HCloudMachineStatus {
 		InstanceState: &instanceState,
 		Addresses:     addresses,
 	}
+}
+
+// serverName names new hcloud servers after the owning Machine: node
+// hostnames use hostname.source=MachineName (Talos), and the hcloud
+// cloud-controller matches nodes to servers BY NAME to set providerID. For
+// MachineDeployment and KCP machines this equals the HCloudMachine name
+// anyway; only CACPPT-created control plane machines differ. Server discovery
+// keys on labels (MachineNameTagKey), not the display name, so existing
+// servers are unaffected. Used by BOTH create paths (snapshot and imageURL).
+func (s *Service) serverName() string {
+	if s.scope.Machine != nil && s.scope.Machine.Name != "" {
+		return s.scope.Machine.Name
+	}
+
+	return s.scope.Name()
 }
 
 func (s *Service) createLabels() map[string]string {
